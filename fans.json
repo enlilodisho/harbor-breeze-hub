@@ -1,0 +1,10 @@
+[
+    {
+        "name": "Fan 1",
+        "remote_id": 1,
+        "light_on": false,
+        "light_brightness": 0,
+        "fan_speed": 0,
+        "fan_mode": "summer"
+    }
+]
