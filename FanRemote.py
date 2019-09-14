@@ -1,6 +1,8 @@
 from FanControl import FanControl
 import sys
 
+debug_dim = False
+
 if len(sys.argv) < 3:
     sys.exit()
 
@@ -20,6 +22,12 @@ if sys.argv[2] == 'light':
     cmd = FanControl.light
 elif sys.argv[2] == 'lightd':
     cmd = FanControl.lightd
+    if not debug_dim and len(sys.argv) >= 4:
+        try:
+            count = int(sys.argv[3])
+        except ValueError:
+            print('Invalid cmd multiplier.')
+            sys.exit()
 elif sys.argv[2] == 'lightset':
     if len(sys.argv) != 4:
         print('Missing brightness level.')
@@ -63,7 +71,6 @@ else:
 print('Remote id: {0}\nCommand: {1}'.format(remote_id, sys.argv[2]))
 
 fan_ctrl = FanControl(40)
-debug_dim = True
 if (cmd == FanControl.lightd and debug_dim):
     try:
         num = 0
@@ -79,5 +86,8 @@ if (cmd == FanControl.lightd and debug_dim):
 elif sys.argv[2] == 'lightset':
     fan_ctrl.turn_on_light_to_brightness(brightness, remote_key)
 else:
-    fan_ctrl.send_fan_cmd(cmd, remote_key)
+    try:
+        fan_ctrl.send_fan_cmd(cmd, remote_key, count)
+    except NameError:
+        fan_ctrl.send_fan_cmd(cmd, remote_key)
 fan_ctrl.cleanup_gpio()

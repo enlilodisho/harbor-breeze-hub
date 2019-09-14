@@ -29,7 +29,7 @@ app.get('/api/fans/:remote_id/:option', (req, res) => {
         res.status(404).json({success:0,msg:'Fan with this remote id does not exist.'});
     } else {
         if (req.params.option in fan) {
-            res.send(fan[req.params.option]);
+            res.json({success:1,option:fan[req.params.option]});
         } else {
             res.status(404).json({success:0,msg:'Option does not exist for fan.'});
         }
@@ -62,7 +62,7 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
         return;
     }
     // Check if new value provided for option.
-    if (fan[req.params.option].toString() != req.query.value) {
+    if (req.params.option == 'light_brightness' || fan[req.params.option].toString() != req.query.value) {
         // Contains option and arguments to run python fan remote script.
         var python_options = {
             mode: 'text',
@@ -92,6 +92,134 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                         // Update fan option.
                         var is_light_on = (req.query.value.toLowerCase() == 'true');
                         fan['light_on'] = is_light_on;
+                        res.json({success:1});
+                    } else {
+                        res.status(500).json({success:0,msg:'Error with fan communication python script.'});
+                    }
+                });
+                break;
+            case 'light_brightness':
+                const MAX_DIM_CNT = 220.0;
+                var brightness = parseInt(req.query.value);
+                if (isNaN(brightness) || brightness <= 0) {
+                    res.status(400).json({success:0,msg:'Invalid fan light brightness provided.'});
+                    return;
+                }
+
+                // convert input from 1-100 to 1-MAX_DIM_CNT
+                brightness = (brightness*MAX_DIM_CNT)/100.0
+                if (brightness > MAX_DIM_CNT) {
+                    brightness = MAX_DIM_CNT;
+                } else if (brightness <= 0) {
+                    brightness = 1;
+                }
+                var brightness_0to1 = brightness/MAX_DIM_CNT;
+                
+                if (fan['light_on']) {
+                    if (fan['light_brightness'] <= brightness_0to1) {
+                        // user is trying to increase light brightness
+                        var dim_cmd_cnt = brightness - (fan['light_brightness']*MAX_DIM_CNT);
+                        if (dim_cmd_cnt == 0) {
+                            res.json({success:1});
+                            return;
+                        } else if (dim_cmd_cnt < 12) {
+                            res.json({success:0,msg:'Requested brightness is too similar to current light brightness.'});
+                            return;
+                        }
+                        python_options.args.push('lightd');
+                        python_options.args.push(dim_cmd_cnt);
+                        run_fan_remote((success) => {
+                            if (success) {
+                                fan['light_brightness'] = brightness_0to1;
+                                res.json({success:1});
+                            } else {
+                                res.status(500).json({success:0,msg:'Error with fan communication python script.'});
+                            }
+                        });
+                    } else {
+                        // user is trying to decrease light brightness
+                        // turn off light first
+                        python_options.args.push('light');
+                        run_fan_remote((success) => {
+                            if (success) {
+                                fan['light_on'] = false;
+                                python_options.args.pop();
+                                // Send brighten/dim command.
+                                python_options.args.push('lightd');
+                                python_options.args.push(brightness);
+                                run_fan_remote((success2) => {
+                                    if (success2) {
+                                        fan['light_on'] = true;
+                                        fan['light_brightness'] = brightness_0to1;
+                                        res.json({success:1});
+                                    } else {
+                                        res.status(500).json({success:0,msg:'Error with fan communication python script [2].'});
+                                    }
+                                });
+                            } else {
+                                res.status(500).json({success:0,msg:'Error with fan communication python script [1].'});
+                            }
+                        });
+                    }
+                } else {
+                    if (fan['light_brightness'] > brightness_0to1) {
+                        // user is trying to turn light to lower brightness than prior saved brightness.
+                        python_options.args.push('lightd');
+                        python_options.args.push(brightness);
+                        run_fan_remote((success) => {
+                            if (success) {
+                                fan['light_on'] = true;
+                                fan['light_brightness'] = brightness_0to1;
+                                res.json({success:1});
+                            } else {
+                                res.status(500).json({success:0,msg:'Error with fan communication python script.'});
+                            }
+                        });
+                    } else {
+                        // user is trying to turn light on to prior saved brightness, then increase further
+                        var dim_cmd_cnt = brightness - (fan['light_brightness']*MAX_DIM_CNT);
+                        // First turn on light.
+                        python_options.args.push('light');
+                        run_fan_remote((success) => {
+                            if (success) {
+                                fan['light_on'] = true;
+                                if (dim_cmd_cnt > 0) {
+                                    python_options.args.pop();
+                                    // increase brightness
+                                    python_options.args.push('lightd');
+                                    python_options.args.push(dim_cmd_cnt);
+                                    run_fan_remote((success2) => {
+                                        if (success2) {
+                                            fan['light_brightness'] = brightness_0to1;
+                                            res.json({success:1});
+                                        } else {
+                                            res.status(500).json({success:0,msg:'Error with fan communication python script [2].'});
+                                        }
+                                    });
+                                }
+                            } else {
+                                res.status(500).json({success:0,msg:'Error with fan communication python script [1].'});
+                            }
+                        });
+                    }
+                }
+
+                break;
+            case 'fan_speed':
+                if (req.query.value == 'wind') {
+                    python_options.args.push('speed_w');
+                } else {
+                    var speed = parseInt(req.query.value);
+                    if (isNaN(speed) || speed < 0 || speed > 6) {
+                        res.status(400).json({success:0,msg:'Invalid fan speed provided.'});
+                        return;
+                    }
+                    python_options.args.push('speed_'+speed);
+                }
+                run_fan_remote((success) => {
+                    if (success) {
+                        // Update fan status.
+                        fan['fan_speed'] = speed;
                         res.json({success:1});
                     } else {
                         res.status(500).json({success:0,msg:'Error with fan communication python script.'});

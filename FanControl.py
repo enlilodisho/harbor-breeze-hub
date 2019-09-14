@@ -110,8 +110,8 @@ class FanControl:
         # Send postamble to mark end of command.
         run_timing_func_by_tag('SR', self.rf_pin)
 
-    def send_fan_cmd(self, cmd, remote_key):
-        for i in range(12):
+    def send_fan_cmd(self, cmd, remote_key, count=12):
+        for i in range(count):
             self.send_single_fan_cmd(cmd, remote_key)
 
     def turn_on_light_to_brightness(self, brightness, remote_key):
