@@ -11,13 +11,13 @@ app.get('/', (req, res) => {
 
 app.get('/api/fans', (req, res) => {
     // Return list of all fans added to hub.
-    res.send(fans);
+    res.send({success:true,result:JSON.stringify(fans)});
 });
 
 app.get('/api/fans/:remote_id', (req, res) => {
     var fan = getFan(req.params.remote_id);
     if (fan == null) {
-        res.status(404).json({success:0,msg:'Fan with this remote id does not exist.'});
+        res.status(404).json({success:false,msg:'Fan with this remote id does not exist.'});
     } else {
         res.send(fan);
     }
@@ -26,12 +26,14 @@ app.get('/api/fans/:remote_id', (req, res) => {
 app.get('/api/fans/:remote_id/:option', (req, res) => {
     var fan = getFan(req.params.remote_id);
     if (fan == null) {
-        res.status(404).json({success:0,msg:'Fan with this remote id does not exist.'});
+        res.status(404).json({success:false,msg:'Fan with this remote id does not exist.'});
     } else {
         if (req.params.option in fan) {
-            res.json({success:1,option:fan[req.params.option]});
+            var result_json = {};
+            result_json[req.params.option] = fan[req.params.option];
+            res.json({success:true,result:JSON.stringify(result_json)});
         } else {
-            res.status(404).json({success:0,msg:'Option does not exist for fan.'});
+            res.status(404).json({success:false,msg:'Option does not exist for fan.'});
         }
     }
 });
@@ -39,26 +41,26 @@ app.get('/api/fans/:remote_id/:option', (req, res) => {
 app.put('/api/fans/:remote_id/:option', (req, res) => {
     // Check if correct query data passed.
     if (!('access_code' in req.query)) {
-        res.status(400).json({success:0,msg:'Missing access code.'});
+        res.status(400).json({success:false,msg:'Missing access code.'});
     }
     if (!('value' in req.query)) {
-        res.status(400).json({success:0,msg:'Missing new value.'});
+        res.status(400).json({success:false,msg:'Missing new value.'});
         return;
     }
     // Get fan from remote id.
     var fan = getFan(req.params.remote_id);
     if (fan == null) {
-        res.status(404).json({success:0,msg:'Fan with this remote id does not exist.'});
+        res.status(404).json({success:false,msg:'Fan with this remote id does not exist.'});
         return;
     }
     // Check if fan access code is correct.
     if (fan.access_code != req.query.access_code) {
-        res.status(403).json({success:0,msg:'Invalid fan access code provided.'});
+        res.status(403).json({success:false,msg:'Invalid fan access code provided.'});
         return;
     }
     // Check if option is invalid.
     if (!(req.params.option in fan)) {
-        res.status(404).json({success:0,msg:'Option does not exist for fan.'});
+        res.status(404).json({success:false,msg:'Option does not exist for fan.'});
         return;
     }
     // Check if new value provided for option.
@@ -92,9 +94,9 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                         // Update fan option.
                         var is_light_on = (req.query.value.toLowerCase() == 'true');
                         fan['light_on'] = is_light_on;
-                        res.json({success:1});
+                        res.json({success:true});
                     } else {
-                        res.status(500).json({success:0,msg:'Error with fan communication python script.'});
+                        res.status(500).json({success:false,msg:'Error with fan communication python script.'});
                     }
                 });
                 break;
@@ -102,7 +104,7 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                 const MAX_DIM_CNT = 220.0;
                 var brightness = parseInt(req.query.value);
                 if (isNaN(brightness) || brightness <= 0) {
-                    res.status(400).json({success:0,msg:'Invalid fan light brightness provided.'});
+                    res.status(400).json({success:false,msg:'Invalid fan light brightness provided.'});
                     return;
                 }
 
@@ -120,10 +122,10 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                         // user is trying to increase light brightness
                         var dim_cmd_cnt = brightness - (fan['light_brightness']*MAX_DIM_CNT);
                         if (dim_cmd_cnt == 0) {
-                            res.json({success:1});
+                            res.json({success:true});
                             return;
                         } else if (dim_cmd_cnt < 12) {
-                            res.json({success:0,msg:'Requested brightness is too similar to current light brightness.'});
+                            res.json({success:false,msg:'Requested brightness is too similar to current light brightness.'});
                             return;
                         }
                         python_options.args.push('lightd');
@@ -131,9 +133,9 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                         run_fan_remote((success) => {
                             if (success) {
                                 fan['light_brightness'] = brightness_0to1;
-                                res.json({success:1});
+                                res.json({success:true});
                             } else {
-                                res.status(500).json({success:0,msg:'Error with fan communication python script.'});
+                                res.status(500).json({success:false,msg:'Error with fan communication python script.'});
                             }
                         });
                     } else {
@@ -151,13 +153,13 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                                     if (success2) {
                                         fan['light_on'] = true;
                                         fan['light_brightness'] = brightness_0to1;
-                                        res.json({success:1});
+                                        res.json({success:true});
                                     } else {
-                                        res.status(500).json({success:0,msg:'Error with fan communication python script [2].'});
+                                        res.status(500).json({success:false,msg:'Error with fan communication python script [2].'});
                                     }
                                 });
                             } else {
-                                res.status(500).json({success:0,msg:'Error with fan communication python script [1].'});
+                                res.status(500).json({success:false,msg:'Error with fan communication python script [1].'});
                             }
                         });
                     }
@@ -170,9 +172,9 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                             if (success) {
                                 fan['light_on'] = true;
                                 fan['light_brightness'] = brightness_0to1;
-                                res.json({success:1});
+                                res.json({success:true});
                             } else {
-                                res.status(500).json({success:0,msg:'Error with fan communication python script.'});
+                                res.status(500).json({success:false,msg:'Error with fan communication python script.'});
                             }
                         });
                     } else {
@@ -191,14 +193,14 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                                     run_fan_remote((success2) => {
                                         if (success2) {
                                             fan['light_brightness'] = brightness_0to1;
-                                            res.json({success:1});
+                                            res.json({success:true});
                                         } else {
-                                            res.status(500).json({success:0,msg:'Error with fan communication python script [2].'});
+                                            res.status(500).json({success:false,msg:'Error with fan communication python script [2].'});
                                         }
                                     });
                                 }
                             } else {
-                                res.status(500).json({success:0,msg:'Error with fan communication python script [1].'});
+                                res.status(500).json({success:false,msg:'Error with fan communication python script [1].'});
                             }
                         });
                     }
@@ -211,7 +213,7 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                 } else {
                     var speed = parseInt(req.query.value);
                     if (isNaN(speed) || speed < 0 || speed > 6) {
-                        res.status(400).json({success:0,msg:'Invalid fan speed provided.'});
+                        res.status(400).json({success:false,msg:'Invalid fan speed provided.'});
                         return;
                     }
                     python_options.args.push('speed_'+speed);
@@ -220,19 +222,19 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                     if (success) {
                         // Update fan status.
                         fan['fan_speed'] = speed;
-                        res.json({success:1});
+                        res.json({success:true});
                     } else {
-                        res.status(500).json({success:0,msg:'Error with fan communication python script.'});
+                        res.status(500).json({success:false,msg:'Error with fan communication python script.'});
                     }
                 });
                 break;
             default:
                 fan[req.params.option] = req.query.value;
-                res.json({success:1});
+                res.json({success:true});
         }
 
     } else {
-        res.status(400).json({success:0,msg:'Option not changed.'});
+        res.status(400).json({success:false,msg:'Option not changed.'});
     }
 });
 
