@@ -3,35 +3,78 @@ const {PythonShell} = require('python-shell');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+const config = require('./config.json');
 var fans = require('./fans.json');
 
 app.get('/', (req, res) => {
     res.send('Harbor Breeze Hub');
 });
 
+function isValidRequest(request) {
+    // Check if access code sent.
+    if (!('access_code' in request.query)) {
+        return false;
+    }
+    // Check if valid access code.
+    if (request.query.access_code == config.access_code) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// Filters out private data from object in fans.json
+function getFanPublicObject(fan) {
+    return {
+        "remote_id": fan.remote_id,
+        "displayname": fan.name,
+        "light": (fan.light_on == true) ? 'on' : 'off',
+        "light_brightness": fan.light_brightness,
+        "fan_speed": fan.fan_speed,
+        "fan_mode": fan.fan_mode
+    };
+}
+
 app.get('/api/fans', (req, res) => {
+    if (!isValidRequest(req)) {
+        res.status(403).json({success:false,msg:'Invalid hub access code.'});
+        return;
+    }
     // Return list of all fans added to hub.
-    res.send({success:true,result:JSON.stringify(fans)});
+    var fanslist = [];
+    for (var i = 0; i < fans.length; i++) {
+        fanslist.push(getFanPublicObject(fans[i]));
+    }
+    res.json({success:true,result:fanslist});
 });
 
 app.get('/api/fans/:remote_id', (req, res) => {
+    if (!isValidRequest(req)) {
+        res.status(403).json({success:false,msg:'Invalid hub access code.'});
+        return;
+    }
     var fan = getFan(req.params.remote_id);
     if (fan == null) {
-        res.status(404).json({success:false,msg:'Fan with this remote id does not exist.'});
+        res.status(404).json({success:false,msg:'Fan with this id does not exist.'});
     } else {
-        res.send(fan);
+        res.json({success:true,result:getFanPublicObject(fan)});
     }
 });
 
 app.get('/api/fans/:remote_id/:option', (req, res) => {
+    if (!isValidRequest(req)) {
+        res.status(403).json({success:false,msg:'Invalid hub access code.'});
+        return;
+    }
     var fan = getFan(req.params.remote_id);
     if (fan == null) {
         res.status(404).json({success:false,msg:'Fan with this remote id does not exist.'});
     } else {
+        fan = getFanPublicObject(fan);
         if (req.params.option in fan) {
             var result_json = {};
             result_json[req.params.option] = fan[req.params.option];
-            res.json({success:true,result:JSON.stringify(result_json)});
+            res.json({success:true,result:result_json});
         } else {
             res.status(404).json({success:false,msg:'Option does not exist for fan.'});
         }
@@ -39,9 +82,9 @@ app.get('/api/fans/:remote_id/:option', (req, res) => {
 });
 
 app.put('/api/fans/:remote_id/:option', (req, res) => {
-    // Check if correct query data passed.
-    if (!('access_code' in req.query)) {
-        res.status(400).json({success:false,msg:'Missing access code.'});
+    if (!isValidRequest(req)) {
+        res.status(403).json({success:false,msg:'Invalid hub access code.'});
+        return;
     }
     if (!('value' in req.query)) {
         res.status(400).json({success:false,msg:'Missing new value.'});
@@ -53,18 +96,18 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
         res.status(404).json({success:false,msg:'Fan with this remote id does not exist.'});
         return;
     }
-    // Check if fan access code is correct.
-    if (fan.access_code != req.query.access_code) {
-        res.status(403).json({success:false,msg:'Invalid fan access code provided.'});
-        return;
-    }
+    var public_fan = getFanPublicObject(fan);
     // Check if option is invalid.
-    if (!(req.params.option in fan)) {
+    if (!(req.params.option in public_fan)) {
         res.status(404).json({success:false,msg:'Option does not exist for fan.'});
         return;
     }
+
+    // Convert to lower case
+    req.query.value = req.query.value.toLowerCase();
+
     // Check if new value provided for option.
-    if (req.params.option == 'light_brightness' || fan[req.params.option].toString() != req.query.value) {
+    if (req.params.option == 'light_brightness' || public_fan[req.params.option].toString() != req.query.value) {
         // Contains option and arguments to run python fan remote script.
         var python_options = {
             mode: 'text',
@@ -86,14 +129,19 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
 
         // Process put request received.
         switch(req.params.option) {
-            case 'light_on':
+            case 'light':
+                console.log('Received request to turn light ' + req.query.value + ', (current: ' + fan['light_on'] + ')');
+                if (!(req.query.value == 'on' || req.query.value == 'off')) {
+                    res.status(400).json({success:false,msg:'Invalid fan light state provided.'});
+                    return;
+                }
                 // Toggle fan light.
                 python_options.args.push('light');
+                console.log('updating light: ' + req.query.value + ', current: ' + fan['light_on']);
                 run_fan_remote((success) => {
                     if (success) {
                         // Update fan option.
-                        var is_light_on = (req.query.value.toLowerCase() == 'true');
-                        fan['light_on'] = is_light_on;
+                        fan['light_on'] = (fan['light_on']) ? false : true;
                         res.json({success:true});
                     } else {
                         res.status(500).json({success:false,msg:'Error with fan communication python script.'});
@@ -103,6 +151,8 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
             case 'light_brightness':
                 const MAX_DIM_CNT = 220.0;
                 var brightness = parseInt(req.query.value);
+                console.log('Received request to set brightness to ' + brightness + ', (current: ' + fan['light_brightness'] + ')');
+                fan['light_brightness'] = brightness/100.0;
                 if (isNaN(brightness) || brightness <= 0) {
                     res.status(400).json({success:false,msg:'Invalid fan light brightness provided.'});
                     return;
@@ -116,6 +166,7 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                     brightness = 1;
                 }
                 var brightness_0to1 = brightness/MAX_DIM_CNT;
+                console.log('setting light to: ' + brightness_0to1);
                 
                 if (fan['light_on']) {
                     if (fan['light_brightness'] <= brightness_0to1) {
@@ -130,6 +181,7 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                         }
                         python_options.args.push('lightd');
                         python_options.args.push(dim_cmd_cnt);
+                        console.log('increasing light by: ' + dim_cmd_cnt);
                         run_fan_remote((success) => {
                             if (success) {
                                 fan['light_brightness'] = brightness_0to1;
@@ -144,9 +196,11 @@ app.put('/api/fans/:remote_id/:option', (req, res) => {
                         python_options.args.push('light');
                         run_fan_remote((success) => {
                             if (success) {
+                                console.log('turning fan on first');
                                 fan['light_on'] = false;
                                 python_options.args.pop();
                                 // Send brighten/dim command.
+                                console.log('increastinb brightness by ' + brightness);
                                 python_options.args.push('lightd');
                                 python_options.args.push(brightness);
                                 run_fan_remote((success2) => {
