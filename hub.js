@@ -7,9 +7,10 @@ var light = [400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 50
 //var threesecon = [3000000, 3000000];
 var threesecon = [30000, 3000];
 
-var light12 = light.concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light);
+//var light12 = light.concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light).concat(light);
 
 //transmitter.transmit(threesecon);
-transmitter.transmit(light12);
+//transmitter.transmit(light12);
+transmitter.transmit(light);
 
-transmitter.destroy();
+//transmitter.destroy();

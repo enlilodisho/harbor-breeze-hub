@@ -79,15 +79,20 @@ RFTransmitter.prototype.destroy = function() {
     this.rf.unexport();
 }
 
-// Adds array of high/low delays to transmit in queue.
-// Must be an even number of delays, as must always end with low.
-RFTransmitter.prototype.transmit = function(timings) {
+// Adds array of high/low timings to transmit in queue.
+// Must be an even number of timings, as RF transmitter must always end in LOW state.
+RFTransmitter.prototype.transmit = function(timings, count=12) {
     // Parameter validation
     if (timings.length % 2 != 0) {
         throw new Error("RF Transmitter must end in LOW state after transmission.");
     } else if (timings.length == 0) {
         throw new Error("Missing data to transmit.");
     }
+    // Add repeated timings.
+    var timings_repeated = [];
+    for (var n = 0; n < count; n++) {
+        timings_repeated = timings_repeated.concat(timings);
+    }
     // Add to queue.
-    this.queue.push(timings);
+    this.queue.push(timings_repeated);
 };
