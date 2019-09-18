@@ -15,9 +15,12 @@
         "smart hub",
         "IoT"
     ],
-    "main": "server.js",
+    "main": "hub.js",
+    "scripts": {
+        "start": "node hub.js"
+    },
     "dependencies": {
         "express": "^4.17.1",
-        "python-shell": "^1.0.8"
+        "onoff": "^4.1.4"
     }
 }
