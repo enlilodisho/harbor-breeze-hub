@@ -63,12 +63,23 @@ function RFTransmitter(rfpin) {
     this.rfpin = rfpin;
     this.queue = []; // Queue with data to transmit.
     this.transmitting = false;
+
+    // Set rf & queueProcessor to default value.
+    this.rf = null;
+    this.queueProcessor = null;
+
+    // Register exit event handler.
+    ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1', 
+    'SIGSEGV', 'SIGUSR2', 'SIGPIPE', 'SIGTERM', 'uncaughtException'].forEach(function(reason) {
+        process.on(reason, this.stop.bind(this));
+    }.bind(this));
 }
 
 module.exports = RFTransmitter;
 
 // Start the RFTransmitter.
 RFTransmitter.prototype.start = function() {
+    console.log("Starting RF Transmitter.");
     // Init gpio pin as output
     this.rf = new GPIO(this.rfpin, 'out');
     // Start processing queue
@@ -77,8 +88,15 @@ RFTransmitter.prototype.start = function() {
 
 // Stop queueProcessor and de-initialize rf gpio pin.
 RFTransmitter.prototype.stop = function() {
-    clearInterval(this.queueProcessor);
-    this.rf.unexport();
+    console.log("Stopping RF Transmitter.");
+    if (this.queueProcessor != null) {
+        clearInterval(this.queueProcessor);
+        this.queueProcessor = null;
+    }
+    if (this.rf != null) {
+        this.rf.unexport();
+        this.rf = null;
+    }
 }
 
 // Adds array of high/low timings to transmit in queue.
