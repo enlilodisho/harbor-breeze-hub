@@ -1,0 +1,31 @@
+{
+    "transmitter_pin": 21,
+    "timings": {
+        "SHORT_ON":     400,
+        "SHORT_OFF":    500,
+        "LONG_ON":      850,
+        "LONG_OFF":     950,
+        "REST":         10000
+    },
+    "remote_ids": {
+        "0":    ["SL", "SL", "SL", "SL", "SL", "SL", "SL", "SL", "SL", "SL", "SL", "SL", "SL", "SL", "SL"],
+        "1_1":  ["SS", "LL", "SL", "SS", "LL", "SS", "LS", "LL", "SS", "LL", "SS", "LS", "LS", "LL", "SL"],
+        "1_2":  ["SL", "SL", "SL", "SL", "SS", "LL", "SS", "LS", "LS", "LS", "LL", "SS", "LL", "SS", "LS"],
+        "1_3":  ["SS", "LL", "SS", "LL", "SS", "LL", "SL", "SS", "LS", "LS", "LS", "LS", "LL", "SS", "LS"]
+    },
+    "commands": {
+        "power":        ["LL", "SS", "LS", "LS", "LS", "LS", "LL", "SS", "LL", "SR"],
+        "chime":        ["LL", "SS", "LL", "SL", "SL", "SS", "LL", "SS", "LL", "SR"],
+        "light":        ["SL", "SL", "SS", "LS", "LL", "SS", "LL", "SS", "LL", "SR"],
+        "lightd":       ["LL", "SS", "LL", "SS", "LL", "SS", "LL", "SS", "LL", "SR"],
+        "speed_1":      ["LL", "SL", "SS", "LS", "LS", "LS", "LL", "SS", "LL", "SR"],
+        "speed_2":      ["LL", "SS", "LL", "SS", "LS", "LS", "LL", "SS", "LL", "SR"],
+        "speed_3":      ["LL", "SL", "SL", "SS", "LS", "LS", "LL", "SS", "LL", "SR"],
+        "speed_4":      ["LL", "SS", "LS", "LL", "SS", "LS", "LL", "SS", "LL", "SR"],
+        "speed_5":      ["LL", "SL", "SS", "LL", "SS", "LS", "LL", "SS", "LL", "SR"],
+        "speed_6":      ["LL", "SS", "LL", "SL", "SS", "LS", "LL", "SS", "LL", "SR"],
+        "breeze":       ["LL", "SL", "SL", "SL", "SS", "LS", "LL", "SS", "LL", "SR"],
+        "rotate_ccw":   ["LL", "SS", "LS", "LS", "LL", "SS", "LL", "SS", "LL", "SR"],
+        "rotate_cw":    ["LL", "SS", "LS", "LS", "LL", "SL", "SL", "SS", "LL", "SR"]
+    }
+}
