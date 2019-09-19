@@ -36,9 +36,23 @@ function FanRemote() {
     this.remoteIds = remoteconfig.remote_ids;  // All available remote ids.
     this.commands = remoteconfig.commands; // All available commands.
     this.transmitter = new RFTransmitter(remoteconfig.transmitter_pin);
+    // Starts the transmitter.
+    this.transmitter.start();
+
+    // Register exit event handler.
+    ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1', 
+    'SIGSEGV', 'SIGUSR2', 'SIGPIPE', 'SIGTERM', 'uncaughtException'].forEach(function(reason) {
+        process.on(reason, this.destroy.bind(this));
+    }.bind(this));
 }
 
 module.exports = FanRemote;
+
+// Stops the transmitter rendering this remote useless.
+FanRemote.prototype.destroy = function() {
+    console.log("De-initializing rf transmitter.");
+    this.transmitter.stop();
+}
 
 FanRemote.prototype.sendCommand = function(cmdName, remoteId) {
     // Validate parameters.

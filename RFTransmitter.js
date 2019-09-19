@@ -1,7 +1,5 @@
 const GPIO = require('onoff').Gpio;
 
-//var queueDelayUs = 10000; // Microseconds to wait before dequeing next transmission.
-
 // Processes first item in queue.
 var processQueue = function(transmitter) {
     if (transmitter.transmitting) {
@@ -63,18 +61,22 @@ var delayus = function(us) {
 
 function RFTransmitter(rfpin) {
     this.rfpin = rfpin;
-    // Init gpio pin as output
-    this.rf = new GPIO(rfpin, 'out');
     this.queue = []; // Queue with data to transmit.
-
     this.transmitting = false;
-    this.queueProcessor = setInterval(processQueue.bind(null, this), 1);
 }
 
 module.exports = RFTransmitter;
 
+// Start the RFTransmitter.
+RFTransmitter.prototype.start = function() {
+    // Init gpio pin as output
+    this.rf = new GPIO(this.rfpin, 'out');
+    // Start processing queue
+    this.queueProcessor = setInterval(processQueue.bind(null, this), 1);
+};
+
 // Stop queueProcessor and de-initialize rf gpio pin.
-RFTransmitter.prototype.destroy = function() {
+RFTransmitter.prototype.stop = function() {
     clearInterval(this.queueProcessor);
     this.rf.unexport();
 }
