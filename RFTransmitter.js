@@ -1,5 +1,7 @@
 const GPIO = require('onoff').Gpio;
 
+var queueDelayMs = 1000; // Miliseconds to wait before dequeing next transmission
+
 // Processes first item in queue.
 var processQueue = function(transmitter) {
     if (transmitter.transmitting) {
@@ -14,7 +16,8 @@ var processQueue = function(transmitter) {
         return; // Nothing in queue.
     }
     // Transmit
-    transmitDataAsync(transmitter, dataToSend);
+//  transmitDataAsync(transmitter, dataToSend);
+    transmitDataSync(transmitter, dataToSend);
 };
 
 var transmitDataSync = function(transmitter, timings) { 
@@ -26,15 +29,19 @@ var transmitDataSync = function(transmitter, timings) {
         delayus(nextDelay);
         nextDelay = timings.shift();
     }
-    transmitter.transmitting = false;
+    setTimeout(function() {
+        transmitter.transmitting = false;
+    }, queueDelayMs);
 };
 
 var transmitDataAsync = function(transmitter, timings, value=1) {
     // Get next time.
     var nextDelay = timings.shift();
     if (nextDelay == null) {
-        transmitter.transmitting = false;
-        return true; // Done transmitting.
+        setTimeout(function() {
+            transmitter.transmitting = false;
+        }, queueDelayMs);
+        return; // Done transmitting.
     }
     transmitter.rf.write(value, (err) => {
         if (err) {
