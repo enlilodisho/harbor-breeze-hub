@@ -104,6 +104,7 @@ RFTransmitter.prototype.stop = function() {
         this.rf.unexport();
         this.rf = null;
     }
+    process.exit();
 }
 
 // Adds array of high/low timings to transmit in queue.

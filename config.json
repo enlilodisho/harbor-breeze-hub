@@ -1,3 +1,16 @@
 {
-    "access_code": "123456"
+    "network_port": 8080,
+    "access_code": "123456",
+    "transmitter_pin": 21,
+    "my_fans": {
+        "1_1": {
+            "name": "Fan #1",
+            "has_light": true,
+            "dimmable": true,
+            "max_dim_steps": 500,
+            "max_speed": 6,
+            "has_breeze": true,
+            "has_rotation": true
+        }
+    }
 }
