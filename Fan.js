@@ -50,6 +50,18 @@ Fan.prototype.resetFan = function() {
     this.remote.toggleFan();
 }
 
+Fan.prototype.getJsonFan = function() {
+    return {
+        "remote_id": this.remote.remoteId,
+        "has_light": this.hasLight,
+        "dimmable": this.dimmable,
+        "max_dim_steps": this.maxDimSteps,
+        "max_speed": this.maxSpeed,
+        "has_breeze": this.hasBreeze,
+        "has_rotation": this.hasRotation
+    };
+};
+
 Fan.prototype.turnOnLight = function() {
     if (!this.hasLight || this.light == Power.ON) {
         return;

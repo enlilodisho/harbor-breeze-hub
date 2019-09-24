@@ -35,6 +35,7 @@ function FanRemote(transmitter, remoteId) {
     if (!(remoteId in FanRemote.remoteIds)) {
         throw new Error("Invalid remote id.");
     }
+    this.remoteId = remoteId;
     this.remoteTimings = FanRemote.remoteIds[remoteId];
 }
 
