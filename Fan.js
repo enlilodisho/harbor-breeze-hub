@@ -81,16 +81,20 @@ Fan.prototype.turnOffLight = function() {
 Fan.prototype.turnOnFan = function(speed=null) {
     if (this.fan == Power.ON) {
         if (speed == null) {
+            this.setFanRotation(this.fan_direction);
+            this.remote.setFanSpeed(this.fanSpeed); // set fan to saved speed.
             return;
         }
         speed = parseInt(speed);
         if (isNaN(speed) || this.fanSpeed == speed || speed < 1 || speed > this.maxSpeed) {
             return;
         }
+        this.setFanRotation(this.fan_direction);
         this.remote.setFanSpeed(speed);
         this.fanSpeed = speed;
     } else {
         if (speed == null) {
+            this.setFanRotation(this.fan_direction);
             this.remote.toggleFan();
             this.fan = Power.ON;
         } else {
@@ -98,6 +102,7 @@ Fan.prototype.turnOnFan = function(speed=null) {
             if (isNaN(speed) || speed < 1 || speed > this.maxSpeed) {
                 return;
             }
+            this.setFanRotation(this.fan_direction);
             this.remote.setFanSpeed(speed);
             this.fan = Power.ON;
             this.fanSpeed = speed;
