@@ -17,7 +17,7 @@ function HarborBreezeHub(transmitter, fans) {
         // Create new remote for fan.
         var remote = new FanRemote(this.transmitter, fan);
         // Create fan.
-        this.fans[fan] = new Fan(remote, fanObj.has_light, fanObj.dimmable, fanObj.max_dim_steps,
+        this.fans[fan] = new Fan(fanObj.name, remote, fanObj.has_light, fanObj.dimmable, fanObj.max_dim_steps,
             fanObj.max_peed, fanObj.has_breeze, fanObj.has_rotation);
     }
 }

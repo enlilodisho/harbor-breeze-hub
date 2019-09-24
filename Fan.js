@@ -1,6 +1,6 @@
 var Power = {
-    "OFF": 0,
-    "ON": 1
+    "OFF": 'off',
+    "ON": 'on'
 };
 module.exports.Power = Power;
 
@@ -10,7 +10,8 @@ var FanMode = {
 };
 module.exports.FanMode = FanMode;
 
-function Fan(remote, hasLight, isDimmable, maxDimSteps, maxSpeed, hasBreeze, hasRotation) {
+function Fan(name, remote, hasLight, isDimmable, maxDimSteps, maxSpeed, hasBreeze, hasRotation) {
+    this.name = name;
     this.remote = remote;
 
     // Store fan capabilities.
@@ -34,12 +35,15 @@ Fan.prototype.resetFan = function() {
     this.fanSpeed = 3;
     this.fan_direction = FanMode.SUMMER;
 
-    if (this.dimmable) { // if not dimmable, cannot force light off automatically
+    if (this.dimmable) {
         // Reset fan light to off and set to 50% brightness.
         this.remote.adjustLight();
         this.remote.toggleLight();
         this.remote.adjustLight(Math.round(this.maxDimSteps/2));
         this.remote.toggleLight();
+    } else {
+        // if not dimmable, cannot force light off automatically
+        console.log("Assuming fan (" + this.name + ") has it's light turned off.");
     }
     
     // Set fan direction to summer.
