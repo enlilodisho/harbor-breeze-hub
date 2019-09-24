@@ -1,4 +1,4 @@
-﻿# Harbor Breeze Hub
+# Harbor Breeze Hub
 
 ### DISCLAIMER: ALPHA SOFTWARE!!
 
@@ -9,12 +9,13 @@ Use at your own risk.
 -----------------
 
 Do you have a Harbor Breeze ceiling fan that is controlled by a remote like the one below?
-![Harbor Breeze Remote](https://i.imgur.com/wlD3SRFl.jpg =201x268)
+<img alt="Harbor Breeze Remote" src="https://i.imgur.com/wlD3SRFl.jpg" width="300" />
+
 Then with this project -- along with a Raspberry Pi and 315MHz RF Transmitter -- you will be able to make your dumb ceiling fan smart!
 
 #### Before you get started:
 
-Please note that this is a **smart hub** (or sometimes called a 'bridge') for Harbor Breeze ceiling fans controlled with a very specific remote. Using only this project, you will be able to control the fan by sending HTTP requests to the hub, however, this is not ideal to use everyday. Most likely you will want to control your fans using an app on your phone. This is not possible using only this hub. Currently, I am working on a [homebridge](https://github.com/nfarina/homebridge) plugin that will allow you to communicate with this hub and control your ceiling fan using Apple HomeKit. To learn more about this, visit the [homebridge-harbor-breeze-hub repository](https://github.com/enlilodisho/homebridge-harbor-breeze-hub/).
+Please note that this is a **smart hub** (or sometimes called a 'bridge') for Harbor Breeze ceiling fans controlled with a specific remote. Using only this project, you will be able to control the fan by sending HTTP requests to the hub, however, this is not an ideal way to control smart devices. Most likely you will want to control your fans using an app on your phone. This is not possible using only this hub. Currently, I am working on a [homebridge](https://github.com/nfarina/homebridge) plugin that will allow you to communicate with this hub and control your ceiling fan using Apple HomeKit. To learn more about this, visit the [homebridge-harbor-breeze-hub repository](https://github.com/enlilodisho/homebridge-harbor-breeze-hub/).
 
 Furthermore, keep in mind that I have only reverse engineered the RF signals for **my** remotes (with help from this [post](https://www.instructables.com/id/Reverse-Engineer-RF-Remote-Controller-for-IoT/)).
 
@@ -34,16 +35,18 @@ To get started you will need:
 
 Instructions:
 
-![315MHz RF Transmitter](https://i.imgur.com/Lyn5IaL.png =300x283)
+<img alt="315MHz RF Transmitter" src="https://i.imgur.com/Lyn5IaL.png" width="300" />
+
 1. Connect the power pin on the transmitter to any 5v pin on the Pi.
 2. Connect the ground pin on the transmitter to any ground pin on the Pi.
 3. Connect the signal pin on the transmitter to any GPIO pin on the Pi.
-4. Solder a wire to the antenna hole in the transmitter.
+4. Solder a wire to the antenna hole on the transmitter.
 
 
 ## Installing & setting up the hub.
 
 I am assuming that you have set up your Raspberry Pi properly and it is connected to the internet.
+
 I am also assuming that:
 
 - You are using Raspbian Buster Lite as the operating system, however other ones should also work.
@@ -118,27 +121,29 @@ Instructions to start the hub automatically when the Raspberry Pi boot and conne
 Communication with the hub is done through HTTP GET/PUT requests. Feel free to create apps/plugins/etc. that use this hub to control your fans!
 
 ### Hub Responses
+
 All responses are in JSON and contain the 'success' key.
 Sample success responses:
 ```json
-{success:true}
+{"success":true}
 ```
 ```json
-{success:true,data:/*expected data*/}
+{"success":true,"data":["expected data"]}
 ```
 Sample error responses:
 ```json
-{success:false}
+{"success":false}
 ```
 ```json
-{success:false,msg:'Invalid fan remote id.'}
+{"success":false,"msg":"Invalid fan remote id."}
 ```
 
 ### All available requests:
 
 #### Get Available Fans
 
-[GET] /api/fans
+**GET** /api/fans
+
 This is used to get a list of all the fans available and their capabilities.
 
 | Parameters    | Type     | Description
@@ -172,8 +177,9 @@ Sample output:
 
 #### Get Fan Capabilities
 
-[GET] /api/fans/:remote_id
-This is used to get a fans capabilities.
+**GET** /api/fans/:remote_id
+
+This is used to get a fan's capabilities.
 
 | Parameters    | Type     | Description
 |---------------|----------|-----------------
@@ -196,8 +202,9 @@ Sample output for `/api/fans/0`:
 
 #### Get Fan Current State
 
-[GET] /api/fans/:remote_id/fan
-This is used to get a fans current state.
+**GET** /api/fans/:remote_id/fan
+
+This is used to get a fan's current state.
 
 | Parameters    | Type     | Description
 |---------------|----------|-----------------
@@ -217,15 +224,13 @@ Sample output for `/api/fans/0/fan`:
 
 #### Get Fan Current Light State
 
-[GET] /api/fans/:remote_id/light
-This is used to get a fans current light state.
+**GET** /api/fans/:remote_id/light
+
+This is used to get a fan's current light state.
 
 | Parameters    | Type     | Description
 |---------------|----------|-----------------
 | access_code   | string   | Hub access code (in `config.json`)
-| direction     | string   | 'ccw'/'summer' to spin fan counter-clockwise; 'cw'/'winter' to spin fan clockwise
-| power         | string   | 'on' to turn fan on, 'off' to turn fan off
-| speed         | string   | speed to set turn fan on to. Ignored when power parameter is not 'on'.
 
 Sample output for `/api/fans/0/light`:
 ```json
@@ -240,13 +245,16 @@ Sample output for `/api/fans/0/light`:
 
 #### Update Fan
 
-[PUT] /api/fans/:remote_id/fan
+**PUT** /api/fans/:remote_id/fan
+
 This is used to turn a fan on/off, change it's speed and/or direction.
 
 | Parameters    | Type     | Description
 |---------------|----------|-----------------
 | access_code   | string   | Hub access code (in `config.json`)
-| power         | string   | 'on' to turn light on, 'off' to turn light off
+| direction     | string   | 'ccw'/'summer' to spin fan counter-clockwise; 'cw'/'winter' to spin fan clockwise
+| power         | string   | 'on' to turn fan on, 'off' to turn fan off
+| speed         | integer  | Fan speed -- ignored when power parameter is not 'on'.
 
 Sample output for `/api/fans/0/light`:
 ```json
@@ -257,7 +265,8 @@ Sample output for `/api/fans/0/light`:
 
 #### Update Fan Light
 
-[PUT] /api/fans/:remote_id/light
+**PUT** /api/fans/:remote_id/light
+
 This is used to turn a fan's light on/off and set it's brightness.
 
 | Parameters    | Type     | Description
