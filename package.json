@@ -16,6 +16,9 @@
         "IoT"
     ],
     "main": "server.js",
+    "scripts": {
+        "pairremote": "node pair_remote_utility.js"
+    },
     "dependencies": {
         "express": "^4.17.1",
         "onoff": "^4.1.4"

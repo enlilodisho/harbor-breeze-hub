@@ -13,6 +13,7 @@
         "1_3":  ["SS", "LL", "SS", "LL", "SS", "LL", "SL", "SS", "LS", "LS", "LS", "LS", "LL", "SS", "LS"]
     },
     "commands": {
+        "pair": ["SL", "SL", "SL", "SL", "SL", "SS", "LL", "SS", "LL", "SR"],
         "chime": ["LL", "SS", "LL", "SL", "SL", "SS", "LL", "SS", "LL", "SR"],
         "light": {
             "power": ["SL", "SL", "SS", "LS", "LL", "SS", "LL", "SS", "LL", "SR"],

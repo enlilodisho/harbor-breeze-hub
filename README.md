@@ -103,7 +103,17 @@ To add a fan to the hub, change the template below so that it corresponds to you
 
 Make sure you change the 'fan_remote_id' to your fan's remote id. You may have to keep trying different ids until you find the correct one.
 Remove the battery cover from the back of your fan's remote. If the dip-switch is set to 0, first try the remote id '0'. If the dip-switch is set to 1, first try the remote ids that begin with '1'. If none of the provided remote ids work, your dip-switch is set to 1, and you have no other Harbor Breeze ceiling fan with their remote's dip-switch set to 0, then you may be able to switch the dip-switch on the remote to 0, re-pair your remote with the fan, and then try remote id '0'.
-If you are not able to get any of the remote ids I provided to work, then as mentioned at the beginning, you will have to reverse engineer the signal and find your remote id yourself. After finding it, you will have to add your remote id in the `fanremote_config.json` file.
+
+If you are not able to get any of the remote ids I provided to work, then you have two choices:
+
+**Choice 1:**
+
+As mentioned in the beginning, you can reverse engineer the signal using a RTL-SDR tuner and find your remote id yourself. After finding it, you will have to add your remote id in the `fanremote_config.json` file.
+
+**Choice 2:**
+
+Alternatively, you can pair one of the remote ids provided to your fan. To do this, simply run the pairing utility (`npm run pairremote` or `node pair_remote_utility.js`) then follow the on-screen instructions.
+_Please note, by doing this you will no longer be able to use your physical fan remote to control the fan._
 
 
 ## Running the hub.

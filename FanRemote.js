@@ -73,6 +73,11 @@ FanRemote.prototype.sendCommand = function(cmdTimings, repeat=null) {
     }
 };
 
+// Send pair command to fan.
+FanRemote.prototype.pairFanRemote = function() {
+    this.sendCommand(FanRemote.commands.pair);
+};
+
 // Turn on/off light.
 FanRemote.prototype.toggleLight = function() {
     this.sendCommand(FanRemote.commands.light.power);
