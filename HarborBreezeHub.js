@@ -20,6 +20,8 @@ function HarborBreezeHub(transmitter, fans) {
         this.fans[fan] = new Fan(fanObj.name, remote, fanObj.has_light, fanObj.dimmable, fanObj.max_dim_steps,
             fanObj.max_peed, fanObj.has_breeze, fanObj.has_rotation);
     }
+    console.log("\nAuto fan initialization is disabled due to bugs.");
+    console.log("Make sure all fans are in an off state before using the hub.");
 }
 
 module.exports = HarborBreezeHub;

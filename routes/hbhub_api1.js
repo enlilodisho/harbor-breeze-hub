@@ -84,7 +84,18 @@ router.put('/fans/:remote_id/light', function(req, res) {
             return;
         }
     }
-    // TODO: Light brightness.
+    // Light brightness.
+    if ('brightness' in req.query) {
+        var lightBrightness = parseFloat(req.query.brightness);
+        if (!isNaN(lightBrightness)) {
+            if (lightBrightness < 0.01) lightBrightness = 0.01;
+            else if (lightBrightness > 1) lightBrightness = 1.0;
+            fan.adjustLightBrightness(lightBrightness);
+        } else {
+            res.status(400).json({success:false,msg:'Invalid fan light brightness provided.'});
+            return;
+        }
+    }
     res.json({success:true});
 });
 

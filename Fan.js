@@ -22,7 +22,8 @@ function Fan(name, remote, hasLight, isDimmable, maxDimSteps, maxSpeed, hasBreez
     this.hasBreeze = hasBreeze;
     this.hasRotation = hasRotation;
 
-    this.resetFan();
+    // Disable auto-init fan due to bugs.
+    //this.resetFan();
 }
 
 module.exports = Fan;
@@ -35,9 +36,10 @@ Fan.prototype.resetFan = function() {
     this.fanSpeed = 3;
     this.fan_direction = FanMode.SUMMER;
 
-    if (this.dimmable) {
+    // Fan dimming disabled for now, due to bugs
+    if (this.dimmable&&false) {
         // Reset fan light to off and set to 50% brightness.
-        this.remote.adjustLight();
+        this.remote.adjustLight(12);
         this.remote.toggleLight();
         this.remote.adjustLight(Math.round(this.maxDimSteps/2));
         this.remote.toggleLight();
@@ -72,6 +74,16 @@ Fan.prototype.turnOnLight = function() {
     }
     this.remote.toggleLight();
     this.light = Power.ON;
+};
+
+Fan.prototype.adjustLightBrightness = function(brightness) {
+    // Fan dimming disabled for now, due to bugs
+    return;
+    if (!this.hasLight || this.light != Power.ON) {
+        return;
+    }
+    brightness = this.maxDimSteps * brightness;
+    this.remote.adjustLight(brightness);
 };
 
 Fan.prototype.turnOffLight = function() {
