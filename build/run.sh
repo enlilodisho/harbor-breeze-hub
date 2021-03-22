@@ -1,3 +1,3 @@
 #! /bin/sh
 
-cd ./out/src ; ./HarborBreezeHub
+cd ./out/src ; ./HBHub
