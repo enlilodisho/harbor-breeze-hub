@@ -21,6 +21,7 @@ if (PACKAGE_TESTS)
     add_subdirectory(test)
 endif()
 
+add_subdirectory(libs/component-event-system)
 add_subdirectory(src)
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_BINARY_DIR})
