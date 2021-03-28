@@ -29,6 +29,7 @@ Result ComponentMaster::start()
     {
         return Result(false, "component master already started");
     }
+    running_ = true;
 
     Result returnResult(true);
     for (auto& component : components_)
@@ -53,7 +54,7 @@ Result ComponentMaster::startComponentOnNewThread(Component* component)
 
 void ComponentMaster::component_thread(Component* component)
 {
-    printf("Starting %s '%s'...", component->type(), component->instanceName().c_str());
+    printf("Starting %s '%s'...\n", component->type(), component->instanceName().c_str());
     component->onStart();
 
     while (running_)
@@ -61,6 +62,6 @@ void ComponentMaster::component_thread(Component* component)
         component->doWork();
     }
 
-    printf("Stopping %s '%s'...", component->type(), component->instanceName().c_str());
+    printf("Stopping %s '%s'...\n", component->type(), component->instanceName().c_str());
     component->onStop();
 }

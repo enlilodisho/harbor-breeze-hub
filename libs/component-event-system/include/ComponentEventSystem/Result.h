@@ -27,7 +27,7 @@ struct Result
     std::string message;
 };
 
-Result operator+(Result lhs, const Result& rhs)
+inline Result operator+(Result lhs, const Result& rhs)
 {
     return lhs += rhs;
 }
