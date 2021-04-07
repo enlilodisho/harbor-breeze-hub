@@ -1,4 +1,4 @@
-set(IncludeDir ${PROJECT_SOURCE_DIR}/include)
+set(IncludeDir ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME})
 include_directories(${IncludeDir})
 
 set(Headers

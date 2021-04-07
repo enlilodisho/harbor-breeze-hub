@@ -1,13 +1,16 @@
 set(IncludeDir ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME})
-include_directories(${IncludeDir})
+include_directories(${IncludeDir} ${Boost_LIBRARIES})
 
 set(Headers
     ${IncludeDir}/Component.h
     ${IncludeDir}/ComponentMaster.h
+    ${IncludeDir}/Event.h
+    ${IncludeDir}/EventDispatcher.h
     ${IncludeDir}/Result.h
 )
 set(Sources
     ComponentMaster.cpp
+    EventDispatcher.cpp
 )
 
 # Require multithreading package

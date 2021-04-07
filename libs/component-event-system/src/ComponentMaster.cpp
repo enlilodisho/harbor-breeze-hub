@@ -3,6 +3,11 @@
 #include <functional>
 #include <iostream> // TODO temp - replace with Logger
 
+ComponentMaster::ComponentMaster()
+{
+    eventDispatcher_ = std::make_unique<EventDispatcher>();
+}
+
 ComponentMaster::~ComponentMaster()
 {
     running_ = false; // will cause component threads to end
@@ -54,14 +59,34 @@ Result ComponentMaster::startComponentOnNewThread(Component* component)
 
 void ComponentMaster::component_thread(Component* component)
 {
-    printf("Starting %s '%s'...\n", component->type(), component->instanceName().c_str());
+    printf("Starting %s '%s'\n", component->type().c_str(), component->instanceName().c_str());
     component->onStart();
 
     while (running_)
     {
+        // get all events to send to this component
+        std::vector<std::pair<Component*, std::shared_ptr<Event>>> eventsToSend;
+        eventDispatcher_->eventsForComponent_mutex.lock();
+        auto events_it = eventDispatcher_->eventsForComponent_.find(component);
+        if (events_it != eventDispatcher_->eventsForComponent_.end())
+        {
+            for (auto& event : events_it->second)
+            {
+                eventsToSend.push_back({event.first,std::move(event.second)});
+            }
+            events_it->second.clear();
+        }
+        eventDispatcher_->eventsForComponent_mutex.unlock();
+
+        // send events
+        for (auto& event : eventsToSend)
+        {
+            component->onEvent(event.first, std::move(event.second));
+        }
+        // do work
         component->doWork();
     }
 
-    printf("Stopping %s '%s'...\n", component->type(), component->instanceName().c_str());
+    printf("Stopping %s '%s'\n", component->type().c_str(), component->instanceName().c_str());
     component->onStop();
 }
