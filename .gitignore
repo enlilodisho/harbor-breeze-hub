@@ -46,3 +46,7 @@ _deps
 
 # Ignore build output folder
 build/out
+
+# CLion
+.idea
+cmake-build-debug
