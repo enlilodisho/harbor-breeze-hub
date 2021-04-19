@@ -5,6 +5,8 @@
 #ifndef HARBORBREEZEHUB_FANMANAGER_H
 #define HARBORBREEZEHUB_FANMANAGER_H
 
+#include "ComponentEventSystem/Component.h"
+
 #include <stdint.h>
 
 enum FanPower
@@ -19,7 +21,7 @@ enum FanLightPower
     FAN_LIGHT_ON
 };
 
-class FanManager {
+class FanManager : public Component {
 private:
     FanPower fanPower = DEFAULT_FAN_POWER;
     uint8_t fanSpeed = DEFAULT_FAN_SPEED;
@@ -30,8 +32,8 @@ public:
     static constexpr uint8_t DEFAULT_FAN_SPEED = 1;
     static constexpr FanLightPower DEFAULT_FAN_LIGHT_POWER = FAN_LIGHT_OFF;
 
-    FanManager();
-    ~FanManager();
+    FanManager(std::string instanceName);
+    ~FanManager() override;
 
     void setFanPower(FanPower newPowerSetting);
     FanPower getFanPower() const;
@@ -39,6 +41,11 @@ public:
     uint8_t getFanSpeed() const;
     void setFanLightPower(FanLightPower newPowerSetting);
     FanLightPower getFanLightPower() const;
+
+    ComponentType type() const override
+    {
+        return "FanManager";
+    }
 };
 
 

@@ -4,7 +4,8 @@
 
 #include "FanManager.h"
 
-FanManager::FanManager()
+FanManager::FanManager(std::string instanceName)
+    : Component(instanceName)
 {
 
 }
