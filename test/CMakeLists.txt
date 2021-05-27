@@ -1,6 +1,8 @@
 set(Sources
     ExampleTests.cpp
     FanManagerTests.cpp
+    RFReceiverTests.cpp
+    RFTransmitterTests.cpp
 )
 
 add_executable(${TEST_NAME} ${Sources})

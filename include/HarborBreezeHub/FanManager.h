@@ -8,6 +8,7 @@
 #include "ComponentEventSystem/Component.h"
 
 #include <stdint.h>
+#include <string>
 
 enum FanPower
 {
@@ -21,7 +22,8 @@ enum FanLightPower
     FAN_LIGHT_ON
 };
 
-class FanManager : public Component {
+class FanManager : public Component
+{
 private:
     FanPower fanPower = DEFAULT_FAN_POWER;
     uint8_t fanSpeed = DEFAULT_FAN_SPEED;
