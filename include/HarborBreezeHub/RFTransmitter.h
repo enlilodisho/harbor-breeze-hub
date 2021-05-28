@@ -16,7 +16,7 @@ class RFTransmitter : public Component
 private:
     const int pinNumber_;
 
-    std::queue<std::vector<unsigned int>> dataToSend_;
+    std::queue<std::vector<unsigned int>> dataToTransmit_;
 
 public:
     RFTransmitter(std::string instanceName, int pinNumber);

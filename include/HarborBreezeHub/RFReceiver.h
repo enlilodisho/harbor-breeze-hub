@@ -19,6 +19,7 @@
 class RFReceiver : public Component
 {
 private:
+    static const unsigned int MIN_TIMING;
     static const unsigned int TIMING_MATCH_THRESHOLD;
 
     static std::unordered_map<int, RFReceiver*> registeredReceivers_;

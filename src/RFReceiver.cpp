@@ -16,6 +16,7 @@
 #include <string.h>
 #include <errno.h>
 
+const unsigned int RFReceiver::MIN_TIMING = 5;
 const unsigned int RFReceiver::TIMING_MATCH_THRESHOLD = 50;
 
 std::unordered_map<int, RFReceiver*> RFReceiver::registeredReceivers_;
@@ -36,85 +37,85 @@ RFReceiver::RFReceiver(std::string instanceName, int pinNumber)
     switch (pinNumber_)
     {
         case 1:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_1);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_1);
             break;
         case 2:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_2);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_2);
             break;
         case 3:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_3);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_3);
             break;
         case 4:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_4);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_4);
             break;
         case 5:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_5);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_5);
             break;
         case 6:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_6);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_6);
             break;
         case 7:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_7);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_7);
             break;
         case 8:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_8);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_8);
             break;
         case 9:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_9);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_9);
             break;
         case 10:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_10);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_10);
             break;
         case 11:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_11);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_11);
             break;
         case 12:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_12);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_12);
             break;
         case 13:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_13);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_13);
             break;
         case 14:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_14);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_14);
             break;
         case 15:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_15);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_15);
             break;
         case 16:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_16);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_16);
             break;
         case 17:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_17);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_17);
             break;
         case 18:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_18);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_18);
             break;
         case 19:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_19);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_19);
             break;
         case 20:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_20);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_20);
             break;
         case 21:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_21);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_21);
             break;
         case 22:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_22);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_22);
             break;
         case 23:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_23);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_23);
             break;
         case 24:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_24);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_24);
             break;
         case 25:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_25);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_25);
             break;
         case 26:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_26);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_26);
             break;
         case 27:
-            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_27);
+            wiringPiISR(pinNumber_, INT_EDGE_BOTH, &RFReceiver::interrupt_callback_pin_27);
             break;
         default:
             throw std::runtime_error("Constructed with unknown pin number.");
@@ -195,10 +196,18 @@ void RFReceiver::processReceivedData(size_t numReceived, size_t numProcessed)
                 possibleMatches_it->second.pop_front();
                 possibleMatches_it++;
             }
+            else if (received_.front() <= MIN_TIMING)
+            {
+                possibleMatches_it++;
+            }
             else
             {
                 possibleMatches_it = possibleMatches_.erase(possibleMatches_it);
             }
+        }
+        else
+        {
+            possibleMatches_it++;
         }
     }
 

@@ -40,8 +40,8 @@ TEST_F(RFTransmitterTests, TransmitDataTest)
     eventDispatcherForTests->subscribe(&fakeComponent1, RFDATA_TRANSMITTED_EVENT_TYPE, rfTransmitter.get());
 
     //std::vector<unsigned int> lightToggleMessage { 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 400, 950, 400, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400, 10000, 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 400, 950, 400, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400, 10000, 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 400, 950, 400, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400, 10000, 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 400, 950, 400, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400, 10000, 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 400, 950, 400, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400, 10000, 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 400, 950, 400, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400, 10000 };
-    std::vector<unsigned int> dataToSend { 100, 200, 300 };
-    rfTransmitter->transmit(dataToSend);
+    std::vector<unsigned int> dataToTransmit { 100, 200, 300 };
+    rfTransmitter->transmit(dataToTransmit);
     rfTransmitter->doWork();
 
     auto events = eventDispatcherForTests->getEventsForComponent(&fakeComponent1);
@@ -57,10 +57,10 @@ TEST_F(RFTransmitterTests, TransmitDataTest)
                         std::dynamic_pointer_cast<RFDataTransmittedEvent>(event.second);
                 // Make sure rf data matches
                 auto& data = rfDataEvent->getData();
-                ASSERT_TRUE(dataToSend.size() == data.size());
+                ASSERT_TRUE(dataToTransmit.size() == data.size());
                 for (size_t i = 0; i < data.size(); i++)
                 {
-                    if (dataToSend[i] == data[i])
+                    if (dataToTransmit[i] == data[i])
                     {
                         if (i+1 == data.size())
                         {

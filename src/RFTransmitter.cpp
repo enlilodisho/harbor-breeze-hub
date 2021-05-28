@@ -22,10 +22,10 @@ RFTransmitter::~RFTransmitter()
 
 void RFTransmitter::doWork()
 {
-    if (!dataToSend_.empty())
+    if (!dataToTransmit_.empty())
     {
-        std::vector<unsigned int> data = dataToSend_.front();
-        dataToSend_.pop();
+        std::vector<unsigned int> data = dataToTransmit_.front();
+        dataToTransmit_.pop();
 
         bool isHigh = false;
         size_t data_i = 0;
@@ -69,7 +69,7 @@ void RFTransmitter::doWork()
 
 void RFTransmitter::transmit(const std::vector<unsigned int>& data)
 {
-    dataToSend_.push(data);
+    dataToTransmit_.push(data);
 }
 
 int RFTransmitter::getPinNumber() const
