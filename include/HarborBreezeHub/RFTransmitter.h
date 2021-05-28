@@ -8,17 +8,19 @@
 #include "ComponentEventSystem/Component.h"
 
 #include <string>
+#include <vector>
 
 class RFTransmitter : public Component
 {
 private:
-    const int pinNumber;
+    const int pinNumber_;
 
 public:
     RFTransmitter(std::string instanceName, int pinNumber);
     ~RFTransmitter();
 
     void doWork() override;
+    void transmit(const std::vector<unsigned int>& data);
     int getPinNumber() const;
 
     ComponentType type() const override

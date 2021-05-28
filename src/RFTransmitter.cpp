@@ -7,14 +7,14 @@
 #include <wiringPi.h>
 
 RFTransmitter::RFTransmitter(std::string instanceName, int pinNumber)
-    : pinNumber(pinNumber), Component(instanceName)
+    : pinNumber_(pinNumber), Component(instanceName)
 {
-    pinMode(pinNumber, OUTPUT);
+    pinMode(pinNumber_, OUTPUT);
 }
 
 RFTransmitter::~RFTransmitter()
 {
-    pinMode(pinNumber, INPUT);
+    pinMode(pinNumber_, INPUT);
 }
 
 void RFTransmitter::doWork()
@@ -22,7 +22,12 @@ void RFTransmitter::doWork()
 
 }
 
+void RFTransmitter::transmit(const std::vector<unsigned int>& data)
+{
+
+}
+
 int RFTransmitter::getPinNumber() const
 {
-    return pinNumber;
+    return pinNumber_;
 }

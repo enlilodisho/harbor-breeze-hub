@@ -10,13 +10,12 @@
 #include <chrono>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 class RFReceiver : public Component
 {
 private:
-    const int pinNumber;
-
-    static std::unordered_map<int, RFReceiver*> registeredReceivers;
+    static std::unordered_map<int, RFReceiver*> registeredReceivers_;
     static void interrupt_callback(int pin);
     static void interrupt_callback_pin_1();
     static void interrupt_callback_pin_2();
@@ -46,8 +45,13 @@ private:
     static void interrupt_callback_pin_26();
     static void interrupt_callback_pin_27();
 
+    const int pinNumber_;
+
     typedef std::chrono::steady_clock clock;
     clock::time_point last_interrupt;
+
+    // Map containing data receiver is listening for given data label
+    std::unordered_map<std::string, std::vector<unsigned int>> dataToListenFor_;
 
     void handle_interrupt_callback();
 
@@ -56,6 +60,10 @@ public:
     ~RFReceiver();
 
     void doWork() override;
+    // Invokes DataReceived Event when data is received.
+    Result listenForData(const std::string& dataLabel, const std::vector<unsigned int>& data);
+    // Stops listening for data given dataLabel. Returns false if dataLabel not found.
+    bool stopListeningForData(const std::string& dataLabel);
     int getPinNumber() const;
 
     ComponentType type() const override

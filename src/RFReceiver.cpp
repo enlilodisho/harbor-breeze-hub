@@ -13,108 +13,108 @@
 #include <string.h>
 #include <errno.h>
 
-std::unordered_map<int, RFReceiver*> RFReceiver::registeredReceivers;
+std::unordered_map<int, RFReceiver*> RFReceiver::registeredReceivers_;
 
 RFReceiver::RFReceiver(std::string instanceName, int pinNumber)
-    : pinNumber(pinNumber), Component(instanceName)
+    : pinNumber_(pinNumber), Component(instanceName)
 {
     // Check if another rf receiver component already has been created for this pin,
-    // If not then instantiate and add to registeredReceivers map.
-    auto it = registeredReceivers.find(pinNumber);
-    if (it != registeredReceivers.end())
+    // If not then instantiate and add to registeredReceivers_ map.
+    auto it = registeredReceivers_.find(pinNumber_);
+    if (it != registeredReceivers_.end())
     {
         throw std::runtime_error("RF Receiver component already initialized on pin number.");
     }
-    pinMode(pinNumber, INPUT);
+    pinMode(pinNumber_, INPUT);
 
     // set up interrupt
-    switch (pinNumber)
+    switch (pinNumber_)
     {
         case 1:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_1);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_1);
             break;
         case 2:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_2);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_2);
             break;
         case 3:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_3);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_3);
             break;
         case 4:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_4);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_4);
             break;
         case 5:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_5);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_5);
             break;
         case 6:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_6);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_6);
             break;
         case 7:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_7);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_7);
             break;
         case 8:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_8);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_8);
             break;
         case 9:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_9);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_9);
             break;
         case 10:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_10);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_10);
             break;
         case 11:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_11);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_11);
             break;
         case 12:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_12);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_12);
             break;
         case 13:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_13);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_13);
             break;
         case 14:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_14);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_14);
             break;
         case 15:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_15);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_15);
             break;
         case 16:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_16);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_16);
             break;
         case 17:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_17);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_17);
             break;
         case 18:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_18);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_18);
             break;
         case 19:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_19);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_19);
             break;
         case 20:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_20);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_20);
             break;
         case 21:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_21);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_21);
             break;
         case 22:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_22);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_22);
             break;
         case 23:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_23);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_23);
             break;
         case 24:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_24);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_24);
             break;
         case 25:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_25);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_25);
             break;
         case 26:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_26);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_26);
             break;
         case 27:
-            wiringPiISR(pinNumber, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_27);
+            wiringPiISR(pinNumber_, INT_EDGE_RISING, &RFReceiver::interrupt_callback_pin_27);
             break;
         default:
             throw std::runtime_error("Constructed with unknown pin number.");
     }
-    registeredReceivers[pinNumber] = this;
+    registeredReceivers_[pinNumber_] = this;
 
     // initialize last interrupt time point
     last_interrupt = clock::now();
@@ -122,10 +122,10 @@ RFReceiver::RFReceiver(std::string instanceName, int pinNumber)
 
 RFReceiver::~RFReceiver()
 {
-    pinMode(pinNumber, INPUT);
+    pinMode(pinNumber_, INPUT);
 
-    // Remove pin number and rf receiver instance from registeredReceivers
-    registeredReceivers.erase(pinNumber);
+    // Remove pin number and rf receiver instance from registeredReceivers_
+    registeredReceivers_.erase(pinNumber_);
 }
 
 void RFReceiver::doWork()
@@ -139,15 +139,35 @@ void RFReceiver::handle_interrupt_callback()
     last_interrupt = now;
 }
 
+Result RFReceiver::listenForData(const std::string& dataLabel, const std::vector<unsigned int>& data)
+{
+    auto it = dataToListenFor_.find(dataLabel);
+    if (it == dataToListenFor_.end())
+    {
+        dataToListenFor_[dataLabel] = data;
+        return Result(true);
+    }
+    else
+    {
+        return Result(false, "already listening to data with provided dataLabel ('%s')", dataLabel.c_str());
+    }
+}
+
+bool RFReceiver::stopListeningForData(const std::string& dataLabel)
+{
+    size_t numErased = dataToListenFor_.erase(dataLabel);
+    return numErased > 0;
+}
+
 int RFReceiver::getPinNumber() const
 {
-    return pinNumber;
+    return pinNumber_;
 }
 
 void RFReceiver::interrupt_callback(int pin)
 {
-    auto it = registeredReceivers.find(pin);
-    if (it != registeredReceivers.end())
+    auto it = registeredReceivers_.find(pin);
+    if (it != registeredReceivers_.end())
     {
         it->second->handle_interrupt_callback();
     }
