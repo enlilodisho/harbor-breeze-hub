@@ -3,15 +3,20 @@
 //
 
 #include "RFReceiver.h"
+#include "RFDataEvent.h"
 
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <stdlib.h>
 #include <wiringPi.h>
+
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+
+const unsigned int RFReceiver::TIMING_MATCH_THRESHOLD = 50;
 
 std::unordered_map<int, RFReceiver*> RFReceiver::registeredReceivers_;
 
@@ -117,7 +122,7 @@ RFReceiver::RFReceiver(std::string instanceName, int pinNumber)
     registeredReceivers_[pinNumber_] = this;
 
     // initialize last interrupt time point
-    last_interrupt = clock::now();
+    last_interrupt_ = clock::now();
 }
 
 RFReceiver::~RFReceiver()
@@ -130,13 +135,95 @@ RFReceiver::~RFReceiver()
 
 void RFReceiver::doWork()
 {
+    received_mutex_.lock();
+    size_t numReceived = received_.size();
+    received_mutex_.unlock();
+
+    processReceivedData(numReceived);
+    for (auto it = possibleMatches_.begin(); it != possibleMatches_.end();)
+    {
+        if (it->second.empty())
+        {
+            // matched
+            auto dataReceived_it = dataToListenFor_.find(it->first);
+            if (dataReceived_it != dataToListenFor_.end())
+            {
+                std::unique_ptr<RFDataEvent> receivedDataEvent = std::make_unique<RFDataEvent>(dataReceived_it->first, dataReceived_it->second);
+                eventDispatcher_->post(this, std::move(receivedDataEvent));
+            }
+            it = possibleMatches_.erase(it);
+        }
+        else
+        {
+            it++;
+        }
+    }
+}
+
+bool RFReceiver::doesTimingMatch(unsigned int desired, unsigned int actual)
+{
+    unsigned int min = std::numeric_limits<unsigned int>::min();
+    unsigned int max = std::numeric_limits<unsigned int>::max();
+    if (desired > TIMING_MATCH_THRESHOLD)
+    {
+        min = desired - TIMING_MATCH_THRESHOLD;
+    }
+    if (desired < max - TIMING_MATCH_THRESHOLD)
+    {
+        max = desired + TIMING_MATCH_THRESHOLD;
+    }
+    return actual >= min && actual <= max;
+}
+
+void RFReceiver::processReceivedData(size_t numReceived, size_t numProcessed)
+{
+    if (numProcessed >= numReceived)
+    {
+        return;
+    }
+
+    for (auto possibleMatches_it = possibleMatches_.begin(); possibleMatches_it != possibleMatches_.end();)
+    {
+        if (!possibleMatches_it->second.empty())
+        {
+            if (doesTimingMatch(possibleMatches_it->second.front(), received_.front()))
+            {
+                possibleMatches_it->second.pop_front();
+                possibleMatches_it++;
+            }
+            else
+            {
+                possibleMatches_it = possibleMatches_.erase(possibleMatches_it);
+            }
+        }
+    }
+
+    for (auto data_it = dataToListenFor_.begin(); data_it != dataToListenFor_.end(); data_it++)
+    {
+        if (doesTimingMatch(data_it->second[0], received_.front()))
+        {
+            std::deque<unsigned int> data;
+            for (size_t i = 1; i < data_it->second.size(); i++)
+            {
+                data.push_back(data_it->second[i]);
+            }
+            possibleMatches_.push_back(std::make_pair(data_it->first, data));
+        }
+    }
+
+    received_.pop();
+    processReceivedData(numReceived, numProcessed + 1);
 }
 
 void RFReceiver::handle_interrupt_callback()
 {
     clock::time_point now = clock::now();
-    unsigned long interval = std::chrono::duration_cast<std::chrono::microseconds>(now - last_interrupt).count();
-    last_interrupt = now;
+    unsigned long interval = std::chrono::duration_cast<std::chrono::microseconds>(now - last_interrupt_).count();
+    last_interrupt_ = now;
+
+    received_mutex_.lock();
+    received_.push((unsigned int)interval);
+    received_mutex_.unlock();
 }
 
 Result RFReceiver::listenForData(const std::string& dataLabel, const std::vector<unsigned int>& data)
@@ -157,6 +244,16 @@ bool RFReceiver::stopListeningForData(const std::string& dataLabel)
 {
     size_t numErased = dataToListenFor_.erase(dataLabel);
     return numErased > 0;
+}
+
+void RFReceiver::receive(const std::vector<unsigned int>& data)
+{
+    received_mutex_.lock();
+    for (size_t i = 0; i < data.size(); i++)
+    {
+        received_.push(data[i]);
+    }
+    received_mutex_.unlock();
 }
 
 int RFReceiver::getPinNumber() const

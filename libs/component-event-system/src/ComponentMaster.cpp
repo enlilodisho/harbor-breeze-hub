@@ -20,6 +20,7 @@ ComponentMaster::~ComponentMaster()
 
 Result ComponentMaster::addComponent(std::unique_ptr<Component> component)
 {
+    component->setEventDispatcher(eventDispatcher_.get());
     components_.push_back(std::move(component)); // add component
     if (running_) // start component if component master has already been started
     {

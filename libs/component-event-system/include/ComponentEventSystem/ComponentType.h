@@ -1,0 +1,8 @@
+#ifndef HARBORBREEZEHUB_COMPONENTTYPE_H
+#define HARBORBREEZEHUB_COMPONENTTYPE_H
+
+#include <string>
+
+using ComponentType = std::string;
+
+#endif //HARBORBREEZEHUB_COMPONENTTYPE_H

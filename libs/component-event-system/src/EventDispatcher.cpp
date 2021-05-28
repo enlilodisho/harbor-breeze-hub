@@ -1,6 +1,10 @@
+#include "Component.h"
 #include "EventDispatcher.h"
-#include <iostream>
 #include <utility>
+
+EventDispatcher::EventDispatcher() {}
+
+EventDispatcher::~EventDispatcher() {}
 
 void EventDispatcher::post(Component* sender, std::unique_ptr<Event> event)
 {

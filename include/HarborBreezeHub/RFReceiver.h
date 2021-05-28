@@ -8,13 +8,19 @@
 #include "ComponentEventSystem/Component.h"
 
 #include <chrono>
+#include <deque>
+#include <mutex>
+#include <queue>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 class RFReceiver : public Component
 {
 private:
+    static const unsigned int TIMING_MATCH_THRESHOLD;
+
     static std::unordered_map<int, RFReceiver*> registeredReceivers_;
     static void interrupt_callback(int pin);
     static void interrupt_callback_pin_1();
@@ -48,11 +54,20 @@ private:
     const int pinNumber_;
 
     typedef std::chrono::steady_clock clock;
-    clock::time_point last_interrupt;
+    clock::time_point last_interrupt_;
 
+    // Timings received (not yet processed)
+    std::queue<unsigned int> received_;
+    // Mutex to lock queue
+    std::mutex received_mutex_;
     // Map containing data receiver is listening for given data label
     std::unordered_map<std::string, std::vector<unsigned int>> dataToListenFor_;
+    // Vector containing data that we may be currently receiving.
+    // Each element in vector contains pair of <dataLabel, remaining data to receive>
+    std::vector<std::pair<std::string, std::deque<unsigned int>>> possibleMatches_;
 
+    static bool doesTimingMatch(unsigned int desired, unsigned int actual);
+    void processReceivedData(size_t numReceived, size_t numProcessed = 0);
     void handle_interrupt_callback();
 
 public:
@@ -64,6 +79,8 @@ public:
     Result listenForData(const std::string& dataLabel, const std::vector<unsigned int>& data);
     // Stops listening for data given dataLabel. Returns false if dataLabel not found.
     bool stopListeningForData(const std::string& dataLabel);
+    // Simulates rf receiver received provided data
+    void receive(const std::vector<unsigned int>& data);
     int getPinNumber() const;
 
     ComponentType type() const override

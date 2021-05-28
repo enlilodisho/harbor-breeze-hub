@@ -1,13 +1,13 @@
 #ifndef COMPONENTEVENTSYSTEM_COMPONENT_H
 #define COMPONENTEVENTSYSTEM_COMPONENT_H
 
+#include "ComponentType.h"
 #include "Event.h"
+#include "EventDispatcher.h"
 #include "Result.h"
 
 #include <memory>
 #include <string>
-
-using ComponentType = std::string;
 
 class Component
 {
@@ -17,6 +17,8 @@ private:
     std::string instanceName_;
 
 protected:
+    EventDispatcher* eventDispatcher_ = nullptr;
+
     // Invoked when component first starts up
     virtual void onStart() {}
     // Invoked when component stops
@@ -29,6 +31,18 @@ protected:
 public:
     Component(const std::string& instanceName) : instanceName_(instanceName) {}
     virtual ~Component() {}
+
+    // Sets the event dispatcher this component should use.
+    void setEventDispatcher(EventDispatcher* eventDispatcher)
+    {
+        eventDispatcher_ = eventDispatcher;
+    }
+    // Returns whether the provided event dispatcher is the dispatcher used
+    // by this component.
+    bool isEventDispatcher(EventDispatcher* eventDispatcher) const
+    {
+        return eventDispatcher == eventDispatcher_;
+    }
 
     const std::string& instanceName() const
     {

@@ -1,3 +1,8 @@
+set(Headers
+    EventDispatcherForTests.h
+    FakeComponent.h
+)
+
 set(Sources
     ExampleTests.cpp
     FanManagerTests.cpp
@@ -5,7 +10,7 @@ set(Sources
     RFTransmitterTests.cpp
 )
 
-add_executable(${TEST_NAME} ${Sources})
+add_executable(${TEST_NAME} ${Sources} ${Headers})
 target_link_libraries(${TEST_NAME} PUBLIC
     gtest_main
     ${LIBRARY_NAME}
