@@ -2,24 +2,24 @@
 // Created by enlil on 5/27/21.
 //
 
-#ifndef HARBORBREEZEHUB_RFDATAEVENT_H
-#define HARBORBREEZEHUB_RFDATAEVENT_H
+#ifndef HARBORBREEZEHUB_RFDATARECEIVEDEVENT_H
+#define HARBORBREEZEHUB_RFDATARECEIVEDEVENT_H
 
 #include "ComponentEventSystem/Event.h"
 
 #include <string>
 #include <vector>
 
-class RFDataEvent : public Event
+class RFDataReceivedEvent : public Event
 {
 private:
     std::string dataLabel_;
     std::vector<unsigned int> data_;
 
 public:
-    RFDataEvent(std::string dataLabel, const std::vector<unsigned int> data)
+    RFDataReceivedEvent(std::string dataLabel, const std::vector<unsigned int> data)
         : dataLabel_(dataLabel), data_(data) {}
-    ~RFDataEvent() {}
+    ~RFDataReceivedEvent() {}
 
     std::string getDataLabel() const
     {
@@ -33,8 +33,8 @@ public:
 
     EventType type() const override
     {
-        return "RFDataEvent";
+        return "RFDataReceivedEvent";
     }
 };
 
-#endif //HARBORBREEZEHUB_RFDATAEVENT_H
+#endif //HARBORBREEZEHUB_RFDATARECEIVEDEVENT_H

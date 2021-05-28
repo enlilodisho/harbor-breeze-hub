@@ -3,7 +3,8 @@ include_directories(${IncludeDir})
 
 set(Headers
     ${IncludeDir}/FanManager.h
-    ${IncludeDir}/RFDataEvent.h
+    ${IncludeDir}/RFDataReceivedEvent.h
+    ${IncludeDir}/RFDataTransmittedEvent.h
     ${IncludeDir}/RFReceiver.h
     ${IncludeDir}/RFTransmitter.h
 )

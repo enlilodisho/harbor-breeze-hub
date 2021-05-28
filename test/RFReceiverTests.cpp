@@ -1,9 +1,10 @@
 #include "EventDispatcherForTests.h"
 #include "FakeComponent.h"
-#include "HarborBreezeHub/RFDataEvent.h"
+#include "HarborBreezeHub/RFDataReceivedEvent.h"
 #include "HarborBreezeHub/RFReceiver.h"
 
 #include <gtest/gtest.h>
+#include <vector>
 #include <wiringPi.h>
 
 constexpr int RF_RECEIVER_PIN = 16;
@@ -47,7 +48,7 @@ TEST_F(RFReceiverTests, ListenForDataTest)
     std::vector<unsigned int> sampleData { 200, 350, 100, 410 };
     ASSERT_TRUE(rfReceiver->listenForData("SAMPLE_DATA", sampleData).success);
 
-    EventType rfDataEventType = "RFDataEvent";
+    EventType rfDataEventType = "RFDataReceivedEvent";
     FakeComponent fakeComponent1("fakeComponent1");
     eventDispatcherForTests->subscribe(&fakeComponent1, rfDataEventType, rfReceiver.get());
 
@@ -67,8 +68,8 @@ TEST_F(RFReceiverTests, ListenForDataTest)
         {
             if (event.second->type() == rfDataEventType)
             {
-                std::shared_ptr<RFDataEvent> rfDataEvent =
-                        std::dynamic_pointer_cast<RFDataEvent>(event.second);
+                std::shared_ptr<RFDataReceivedEvent> rfDataEvent =
+                        std::dynamic_pointer_cast<RFDataReceivedEvent>(event.second);
                 if (rfDataEvent->getDataLabel() == "SAMPLE_DATA")
                 {
                     // Make sure rf data matches

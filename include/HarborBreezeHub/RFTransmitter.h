@@ -7,6 +7,7 @@
 
 #include "ComponentEventSystem/Component.h"
 
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,8 @@ class RFTransmitter : public Component
 {
 private:
     const int pinNumber_;
+
+    std::queue<std::vector<unsigned int>> dataToSend_;
 
 public:
     RFTransmitter(std::string instanceName, int pinNumber);

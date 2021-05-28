@@ -3,7 +3,7 @@
 //
 
 #include "RFReceiver.h"
-#include "RFDataEvent.h"
+#include "RFDataReceivedEvent.h"
 
 #include <limits>
 #include <sstream>
@@ -148,8 +148,12 @@ void RFReceiver::doWork()
             auto dataReceived_it = dataToListenFor_.find(it->first);
             if (dataReceived_it != dataToListenFor_.end())
             {
-                std::unique_ptr<RFDataEvent> receivedDataEvent = std::make_unique<RFDataEvent>(dataReceived_it->first, dataReceived_it->second);
-                eventDispatcher_->post(this, std::move(receivedDataEvent));
+                std::unique_ptr<RFDataReceivedEvent> receivedDataEvent =
+                        std::make_unique<RFDataReceivedEvent>(dataReceived_it->first, dataReceived_it->second);
+                if (eventDispatcher_)
+                {
+                    eventDispatcher_->post(this, std::move(receivedDataEvent));
+                }
             }
             it = possibleMatches_.erase(it);
         }
