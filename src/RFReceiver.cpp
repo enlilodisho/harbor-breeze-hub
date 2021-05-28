@@ -211,7 +211,9 @@ void RFReceiver::processReceivedData(size_t numReceived, size_t numProcessed)
         }
     }
 
+    received_mutex_.lock();
     received_.pop();
+    received_mutex_.unlock();
     processReceivedData(numReceived, numProcessed + 1);
 }
 
