@@ -13,18 +13,12 @@
 class RFDataReceivedEvent : public Event
 {
 private:
-    std::string dataLabel_;
     std::vector<unsigned int> data_;
 
 public:
-    RFDataReceivedEvent(std::string dataLabel, const std::vector<unsigned int> data)
-        : dataLabel_(dataLabel), data_(data) {}
+    RFDataReceivedEvent(const std::vector<unsigned int> data)
+        : data_(data) {}
     ~RFDataReceivedEvent() {}
-
-    std::string getDataLabel() const
-    {
-        return dataLabel_;
-    }
 
     const std::vector<unsigned int>& getData() const
     {

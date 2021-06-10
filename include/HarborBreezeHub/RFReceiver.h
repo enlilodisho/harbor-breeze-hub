@@ -6,6 +6,7 @@
 #define HARBORBREEZEHUB_RF_RECEIVER_H
 
 #include "ComponentEventSystem/Component.h"
+#include "RFProtocol.h"
 
 #include <chrono>
 #include <deque>
@@ -19,11 +20,15 @@
 class RFReceiver : public Component
 {
 private:
+    typedef std::chrono::steady_clock clock;
+
+    static const size_t MAX_TIMINGS = 167;
+    static const unsigned int MIN_SEPARATION_TIMING;
     static const unsigned int MIN_TIMING;
     static const unsigned int TIMING_MATCH_THRESHOLD;
 
     static std::unordered_map<int, RFReceiver*> registeredReceivers_;
-    static void interrupt_callback(int pin);
+    static void interrupt_callback(int pin, const clock::time_point& now);
     static void interrupt_callback_pin_1();
     static void interrupt_callback_pin_2();
     static void interrupt_callback_pin_3();
@@ -54,34 +59,46 @@ private:
 
     const int pinNumber_;
 
-    typedef std::chrono::steady_clock clock;
     clock::time_point last_interrupt_;
 
+    // Contains the protocols the receiver is listening for.
+    std::vector<RFProtocol> rfProtocols_ {
+            { 350, {  1, 31 }, {  1,  3 }, {  3,  1 }, false },    // protocol 0
+            { 650, {  1, 10 }, {  1,  2 }, {  2,  1 }, false },    // protocol 1
+            { 100, { 30, 71 }, {  4, 11 }, {  9,  6 }, false },    // protocol 2
+            { 380, {  1,  6 }, {  1,  3 }, {  3,  1 }, false },    // protocol 3
+            { 500, {  6, 14 }, {  1,  2 }, {  2,  1 }, false },    // protocol 4
+            { 450, { 23,  1 }, {  1,  2 }, {  2,  1 }, true },     // protocol 5 (HT6P20B)
+            { 150, {  2, 62 }, {  1,  6 }, {  6,  1 }, false },    // protocol 6 (HS2303-PT, i. e. used in AUKEY Remote)
+            { 200, {  3, 130}, {  7, 16 }, {  3,  16}, false},     // protocol 7 Conrad RS-200 RX
+            { 200, { 130, 7 }, {  16, 7 }, { 16,  3 }, true},      // protocol 8 Conrad RS-200 TX
+            { 365, { 18,  1 }, {  3,  1 }, {  1,  3 }, true },     // protocol 9 (1ByOne Doorbell)
+            { 270, { 36,  1 }, {  1,  2 }, {  2,  1 }, true },     // protocol 10 (HT12E)
+            { 320, { 36,  1 }, {  1,  2 }, {  2,  1 }, true }      // protocol 11 (SM5212)
+    };
+    // How sensitive are we to delays in receive signal
+    int receiveTolerance_ = 120;
     // Timings received (not yet processed)
-    std::queue<unsigned int> received_;
+    std::vector<unsigned int> timings_;
+    // How many times this signal has been received
+    unsigned int timingsSignalCount_ = 0;
+    /*
+    std::queue<unsigned long> received_;
     // Mutex to lock queue
-    std::mutex received_mutex_;
-    // Map containing data receiver is listening for given data label
-    std::unordered_map<std::string, std::vector<unsigned int>> dataToListenFor_;
-    // Vector containing data that we may be currently receiving.
-    // Each element in vector contains pair of <dataLabel, remaining data to receive>
-    std::vector<std::pair<std::string, std::deque<unsigned int>>> possibleMatches_;
+    std::mutex received_mutex_;*/
 
-    static bool doesTimingMatch(unsigned int desired, unsigned int actual);
-    void processReceivedData(size_t numReceived, size_t numProcessed = 0);
-    void handle_interrupt_callback();
+    static inline unsigned int diff(unsigned int a, unsigned int b);
+    bool receiveProtocol(const RFProtocol& rfProtocol, unsigned long* outData);
+    void handle_interrupt_callback(const clock::time_point& now);
 
 public:
     RFReceiver(std::string instanceName, int pinNumber);
     ~RFReceiver();
 
     void doWork() override;
-    // Invokes DataReceived Event when data is received.
-    Result listenForData(const std::string& dataLabel, const std::vector<unsigned int>& data);
-    // Stops listening for data given dataLabel. Returns false if dataLabel not found.
-    bool stopListeningForData(const std::string& dataLabel);
+    /*
     // Simulates rf receiver received provided data
-    void receive(const std::vector<unsigned int>& data);
+    void receive(const unsigned long data);*/
     int getPinNumber() const;
 
     ComponentType type() const override

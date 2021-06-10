@@ -28,11 +28,10 @@ void RFTransmitter::doWork()
         dataToTransmit_.pop();
 
         bool isHigh = false;
-        size_t data_i = 0;
         size_t dataLength = data.size();
         typedef std::chrono::steady_clock clock;
         clock::time_point lastPowerToggle = clock::now();
-        for (; data_i < dataLength; data_i++)
+        for (size_t data_i = 0; data_i < dataLength; data_i++)
         {
             if (isHigh)
             {

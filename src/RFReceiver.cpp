@@ -1,6 +1,7 @@
 //
 // Created by enlil on 4/19/21.
 //
+// Based on: rc-switch (https://github.com/sui77/rc-switch)
 
 #include "RFReceiver.h"
 #include "RFDataReceivedEvent.h"
@@ -16,7 +17,8 @@
 #include <string.h>
 #include <errno.h>
 
-const unsigned int RFReceiver::MIN_TIMING = 5;
+const unsigned int RFReceiver::MIN_SEPARATION_TIMING = 4300;
+const unsigned int RFReceiver::MIN_TIMING = 50;
 const unsigned int RFReceiver::TIMING_MATCH_THRESHOLD = 50;
 
 std::unordered_map<int, RFReceiver*> RFReceiver::registeredReceivers_;
@@ -136,286 +138,303 @@ RFReceiver::~RFReceiver()
 
 void RFReceiver::doWork()
 {
+    /*
     received_mutex_.lock();
     size_t numReceived = received_.size();
     received_mutex_.unlock();
-
-    processReceivedData(numReceived);
-    for (auto it = possibleMatches_.begin(); it != possibleMatches_.end();)
+    std::unique_ptr<RFDataReceivedEvent> receivedDataEvent =
+         std::make_unique<RFDataReceivedEvent>(dataReceived_it->first, dataReceived_it->second);
+    if (eventDispatcher_)
     {
-        if (it->second.empty())
+        eventDispatcher_->post(this, std::move(receivedDataEvent));
+    }
+     */
+}
+
+inline unsigned int RFReceiver::diff(unsigned int a, unsigned int b)
+{
+    return ((a > b) ? (a - b) : (b - a));
+}
+
+bool RFReceiver::receiveProtocol(const RFProtocol& rfProtocol, unsigned long* outData)
+{
+    unsigned long data = 0; // the received data
+    // Assume longer pulse length was captured in timings[0]
+    const unsigned int syncLength = (rfProtocol.syncFactor.low > rfProtocol.syncFactor.high) ? rfProtocol.syncFactor.low : rfProtocol.syncFactor.high;
+    const unsigned int delay = timings_[0] / syncLength;
+    const unsigned int delayTolerance = delay * receiveTolerance_ / 100;
+
+    const unsigned int firstDataTiming = (rfProtocol.invertedSignal) ? 2 : 1;
+    // Read signal data
+    for (unsigned int i = firstDataTiming; i < timings_.size() - 1; i+=2)
+    {
+        data <<= 1;
+        if (diff(timings_[i], delay * rfProtocol.zero.high) < delayTolerance &&
+            diff(timings_[i + 1], delay * rfProtocol.zero.low) < delayTolerance)
         {
-            // matched
-            auto dataReceived_it = dataToListenFor_.find(it->first);
-            if (dataReceived_it != dataToListenFor_.end())
-            {
-                std::unique_ptr<RFDataReceivedEvent> receivedDataEvent =
-                        std::make_unique<RFDataReceivedEvent>(dataReceived_it->first, dataReceived_it->second);
-                if (eventDispatcher_)
-                {
-                    eventDispatcher_->post(this, std::move(receivedDataEvent));
-                }
-            }
-            it = possibleMatches_.erase(it);
+            std::cout << "0";
+            // zero
+        }
+        else if (diff(timings_[i], delay * rfProtocol.one.high) < delayTolerance &&
+                 diff(timings_[i + 1], delay * rfProtocol.one.low) < delayTolerance)
+        {
+            // one
+            std::cout << "1";
+            data |= 1;
         }
         else
         {
-            it++;
+            // Failed
+            std::cout << "Failed to process signal\n";
+            return false;
         }
     }
+    std::cout << std::endl;
+    *outData = data;
+    return true;
 }
 
-bool RFReceiver::doesTimingMatch(unsigned int desired, unsigned int actual)
+void RFReceiver::handle_interrupt_callback(const clock::time_point& now)
 {
-    unsigned int min = std::numeric_limits<unsigned int>::min();
-    unsigned int max = std::numeric_limits<unsigned int>::max();
-    if (desired > TIMING_MATCH_THRESHOLD)
-    {
-        min = desired - TIMING_MATCH_THRESHOLD;
-    }
-    if (desired < max - TIMING_MATCH_THRESHOLD)
-    {
-        max = desired + TIMING_MATCH_THRESHOLD;
-    }
-    return actual >= min && actual <= max;
-}
+    unsigned long interval = std::chrono::duration_cast<std::chrono::microseconds>(now - last_interrupt_).count();
+    last_interrupt_ = now;
 
-void RFReceiver::processReceivedData(size_t numReceived, size_t numProcessed)
-{
-    if (numProcessed >= numReceived)
+    // Ignore short timings
+    if (interval < MIN_TIMING)
     {
         return;
     }
 
-    for (auto possibleMatches_it = possibleMatches_.begin(); possibleMatches_it != possibleMatches_.end();)
+    if (interval >= MIN_SEPARATION_TIMING)
     {
-        if (!possibleMatches_it->second.empty())
+        // A long gap between signal level change occurred.
+        // This could be the gap between 2 transmissions of same signal.
+        if (timingsSignalCount_ == 0 || (timings_.size() > 7 && diff(interval, timings_[0]) < 200))
         {
-            if (doesTimingMatch(possibleMatches_it->second.front(), received_.front()))
+            // This long signal is close in length to the long signal which came before.
+            // Thus it may indeed be a gap between two transmissions, assuming that the
+            // sender sends the signal multiple times with the same gap between them.
+            timingsSignalCount_++;
+            if (timingsSignalCount_ == 2)
             {
-                possibleMatches_it->second.pop_front();
-                possibleMatches_it++;
-            }
-            else if (received_.front() <= MIN_TIMING)
-            {
-                possibleMatches_it++;
-            }
-            else
-            {
-                possibleMatches_it = possibleMatches_.erase(possibleMatches_it);
+                // print out signal timings
+                std::cout << "Received: ";
+                for (unsigned int timing : timings_)
+                {
+                    std::cout << timing << ", ";
+                }
+                std::cout << std::endl;
+
+                // Process received signal
+                for (unsigned int i = 0; i < rfProtocols_.size(); i++)
+                {
+                    unsigned long data;
+                    std::cout << "attempt protocol " << i << std::endl;
+                    if (receiveProtocol(rfProtocols_[i], &data))
+                    {
+                        std::cout << "received protocol " << i << ", data: " << data << "\n";
+                        /*received_mutex_.lock();
+                        received_.push(data);
+                        received_mutex_.unlock();*/
+                        break;
+                    }
+                }
+                timingsSignalCount_ = 0;
             }
         }
-        else
-        {
-            possibleMatches_it++;
-        }
+        timings_.clear();
     }
 
-    for (auto data_it = dataToListenFor_.begin(); data_it != dataToListenFor_.end(); data_it++)
+    // Check if overflow signal
+    if (timings_.size() >= MAX_TIMINGS)
     {
-        if (doesTimingMatch(data_it->second[0], received_.front()))
-        {
-            std::deque<unsigned int> data;
-            for (size_t i = 1; i < data_it->second.size(); i++)
-            {
-                data.push_back(data_it->second[i]);
-            }
-            possibleMatches_.push_back(std::make_pair(data_it->first, data));
-        }
+        timings_.clear();
     }
-
-    received_mutex_.lock();
-    received_.pop();
-    received_mutex_.unlock();
-    processReceivedData(numReceived, numProcessed + 1);
+    // Add timing to timings_ vector
+    timings_.push_back(interval);
 }
 
-void RFReceiver::handle_interrupt_callback()
-{
-    clock::time_point now = clock::now();
-    unsigned long interval = std::chrono::duration_cast<std::chrono::microseconds>(now - last_interrupt_).count();
-    last_interrupt_ = now;
-
-    received_mutex_.lock();
-    received_.push((unsigned int)interval);
-    received_mutex_.unlock();
-}
-
-Result RFReceiver::listenForData(const std::string& dataLabel, const std::vector<unsigned int>& data)
-{
-    auto it = dataToListenFor_.find(dataLabel);
-    if (it == dataToListenFor_.end())
-    {
-        dataToListenFor_[dataLabel] = data;
-        return Result(true);
-    }
-    else
-    {
-        return Result(false, "already listening to data with provided dataLabel ('%s')", dataLabel.c_str());
-    }
-}
-
-bool RFReceiver::stopListeningForData(const std::string& dataLabel)
-{
-    size_t numErased = dataToListenFor_.erase(dataLabel);
-    return numErased > 0;
-}
-
-void RFReceiver::receive(const std::vector<unsigned int>& data)
+/*
+void RFReceiver::receive(const unsigned long data)
 {
     received_mutex_.lock();
-    for (size_t i = 0; i < data.size(); i++)
-    {
-        received_.push(data[i]);
-    }
+    // TODO
     received_mutex_.unlock();
 }
+*/
 
 int RFReceiver::getPinNumber() const
 {
     return pinNumber_;
 }
 
-void RFReceiver::interrupt_callback(int pin)
+void RFReceiver::interrupt_callback(int pin, const clock::time_point& now)
 {
     auto it = registeredReceivers_.find(pin);
     if (it != registeredReceivers_.end())
     {
-        it->second->handle_interrupt_callback();
+        it->second->handle_interrupt_callback(now);
     }
 }
 
 void RFReceiver::interrupt_callback_pin_1()
 {
-    interrupt_callback(1);
+    clock::time_point now = clock::now();
+    interrupt_callback(1, now);
 }
 
 void RFReceiver::interrupt_callback_pin_2()
 {
-    interrupt_callback(2);
+    clock::time_point now = clock::now();
+    interrupt_callback(2, now);
 }
 
 void RFReceiver::interrupt_callback_pin_3()
 {
-    interrupt_callback(3);
+    clock::time_point now = clock::now();
+    interrupt_callback(3, now);
 }
 
 void RFReceiver::interrupt_callback_pin_4()
 {
-    interrupt_callback(4);
+    clock::time_point now = clock::now();
+    interrupt_callback(4, now);
 }
 
 void RFReceiver::interrupt_callback_pin_5()
 {
-    interrupt_callback(5);
+    clock::time_point now = clock::now();
+    interrupt_callback(5, now);
 }
 
 void RFReceiver::interrupt_callback_pin_6()
 {
-    interrupt_callback(6);
+    clock::time_point now = clock::now();
+    interrupt_callback(6, now);
 }
 
 void RFReceiver::interrupt_callback_pin_7()
 {
-    interrupt_callback(7);
+    clock::time_point now = clock::now();
+    interrupt_callback(7, now);
 }
 
 void RFReceiver::interrupt_callback_pin_8()
 {
-    interrupt_callback(8);
+    clock::time_point now = clock::now();
+    interrupt_callback(8, now);
 }
 
 void RFReceiver::interrupt_callback_pin_9()
 {
-    interrupt_callback(9);
+    clock::time_point now = clock::now();
+    interrupt_callback(9, now);
 }
 
 void RFReceiver::interrupt_callback_pin_10()
 {
-    interrupt_callback(10);
+    clock::time_point now = clock::now();
+    interrupt_callback(10, now);
 }
 
 void RFReceiver::interrupt_callback_pin_11()
 {
-    interrupt_callback(11);
+    clock::time_point now = clock::now();
+    interrupt_callback(11, now);
 }
 
 void RFReceiver::interrupt_callback_pin_12()
 {
-    interrupt_callback(12);
+    clock::time_point now = clock::now();
+    interrupt_callback(12, now);
 }
 
 void RFReceiver::interrupt_callback_pin_13()
 {
-    interrupt_callback(13);
+    clock::time_point now = clock::now();
+    interrupt_callback(13, now);
 }
 
 void RFReceiver::interrupt_callback_pin_14()
 {
-    interrupt_callback(14);
+    clock::time_point now = clock::now();
+    interrupt_callback(14, now);
 }
 
 void RFReceiver::interrupt_callback_pin_15()
 {
-    interrupt_callback(15);
+    clock::time_point now = clock::now();
+    interrupt_callback(15, now);
 }
 
 void RFReceiver::interrupt_callback_pin_16()
 {
-    interrupt_callback(16);
+    clock::time_point now = clock::now();
+    interrupt_callback(16, now);
 }
 
 void RFReceiver::interrupt_callback_pin_17()
 {
-    interrupt_callback(17);
+    clock::time_point now = clock::now();
+    interrupt_callback(17, now);
 }
 
 void RFReceiver::interrupt_callback_pin_18()
 {
-    interrupt_callback(18);
+    clock::time_point now = clock::now();
+    interrupt_callback(18, now);
 }
 
 void RFReceiver::interrupt_callback_pin_19()
 {
-    interrupt_callback(19);
+    clock::time_point now = clock::now();
+    interrupt_callback(19, now);
 }
 
 void RFReceiver::interrupt_callback_pin_20()
 {
-    interrupt_callback(20);
+    clock::time_point now = clock::now();
+    interrupt_callback(20, now);
 }
 
 void RFReceiver::interrupt_callback_pin_21()
 {
-    interrupt_callback(21);
+    clock::time_point now = clock::now();
+    interrupt_callback(21, now);
 }
 
 void RFReceiver::interrupt_callback_pin_22()
 {
-    interrupt_callback(22);
+    clock::time_point now = clock::now();
+    interrupt_callback(22, now);
 }
 
 void RFReceiver::interrupt_callback_pin_23()
 {
-    interrupt_callback(23);
+    clock::time_point now = clock::now();
+    interrupt_callback(23, now);
 }
 
 void RFReceiver::interrupt_callback_pin_24()
 {
-    interrupt_callback(24);
+    clock::time_point now = clock::now();
+    interrupt_callback(24, now);
 }
 
 void RFReceiver::interrupt_callback_pin_25()
 {
-    interrupt_callback(25);
+    clock::time_point now = clock::now();
+    interrupt_callback(25, now);
 }
 
 void RFReceiver::interrupt_callback_pin_26()
 {
-    interrupt_callback(26);
+    clock::time_point now = clock::now();
+    interrupt_callback(26, now);
 }
 
 void RFReceiver::interrupt_callback_pin_27()
 {
-    interrupt_callback(27);
+    clock::time_point now = clock::now();
+    interrupt_callback(27, now);
 }
