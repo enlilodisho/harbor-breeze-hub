@@ -15,7 +15,7 @@ RFReceiver::RFReceiver(const std::string& instanceName, int pinNumber)
                                                         std::bind(&RFReceiver::onReceiveInterrupt, this, _1));
     if (!r1.success)
     {
-        throw std::logic_error("Another RF Receiver component already initialized on pin number.");
+        throw std::logic_error(r1.message);
     }
 }
 

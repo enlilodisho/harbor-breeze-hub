@@ -6,6 +6,7 @@
 #include <wiringPi.h>
 
 constexpr int RF_RECEIVER_PIN = 16;
+constexpr int RF_RECEIVER_ALT_PIN = 15;
 
 struct RFReceiverTests : public ::testing::Test
 {
@@ -28,5 +29,7 @@ struct RFReceiverTests : public ::testing::Test
 
 TEST_F(RFReceiverTests, MultipleRFReceiversForPinThrowsErrorTest)
 {
-    git statu
+    ASSERT_THROW(std::make_unique<RFReceiver>("RFReceiver2", RF_RECEIVER_PIN),
+            std::logic_error);
+    ASSERT_NO_THROW(std::make_unique<RFReceiver>("RFReceiver2", RF_RECEIVER_ALT_PIN));
 }

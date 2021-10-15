@@ -20,10 +20,7 @@ InterruptsController::~InterruptsController()
 
 Result InterruptsController::registerInterrupt(int pin, int edgeType, const std::function<void(const clock::time_point&)>& interruptHandler)
 {
-    if (instance_ == nullptr)
-    {
-        return Result(false, "No singleton instance of InterruptsController exists.");
-    }
+    getInstance(); // creates singleton instance of InterruptsController if non exists
 
     // Make sure interrupt has not already been registered
     auto it = instance_->registeredInterrupts_.find(pin);
