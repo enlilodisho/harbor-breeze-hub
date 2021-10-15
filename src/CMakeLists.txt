@@ -3,6 +3,7 @@ include_directories(${IncludeDir})
 
 set(Headers
     ${IncludeDir}/FanManager.h
+    ${IncludeDir}/InterruptsController.h
     ${IncludeDir}/RFDataReceivedEvent.h
     ${IncludeDir}/RFDataTransmittedEvent.h
     ${IncludeDir}/RFReceiver.h
@@ -10,6 +11,7 @@ set(Headers
 )
 set(Sources
     FanManager.cpp
+    InterruptsController.cpp
     RFReceiver.cpp
     RFTransmitter.cpp
     main.cpp

@@ -39,6 +39,7 @@ Result InterruptsController::registerInterrupt(int pin, int edgeType, const std:
         return Result(false, "No internal callback function available for specified pin.");
     }
     instance_->registeredInterrupts_[pin] = interruptHandler;
+    pinMode(pin, INPUT);
     wiringPiISR(pin, edgeType, internal_callback_function);
     return Result(true);
 }
