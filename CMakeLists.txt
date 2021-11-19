@@ -13,6 +13,9 @@ configure_file(HarborBreezeHubConfig.h.in HarborBreezeHubConfig.h)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 17)
 
+# Add linker flag for boost::filesystem
+set(CMAKE_CXX_FLAGS "-lboost_filesystem")
+
 option(PACKAGE_TESTS "Build the tests" ON)
 if (PACKAGE_TESTS)
     set(TEST_NAME ${PROJECT_NAME}Tests)

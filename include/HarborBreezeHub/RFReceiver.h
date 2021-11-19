@@ -6,21 +6,23 @@
 #define HARBORBREEZEHUB_RFRECEIVER_H
 
 #include "core.h"
-#include "ComponentEventSystem/Component.h"
-#include "InterruptsController.h"
 
 class RFReceiver : public Component
 {
 private:
     const int pinNumber_;
+    std::string gpioFile_;
 
-    void onReceiveInterrupt(const InterruptsController::clock::time_point& timePoint);
+    std::shared_ptr<std::vector<unsigned int>> buffer_;
+
+protected:
+    void doWork() override;
 
 public:
     RFReceiver(const std::string& instanceName, int pinNumber);
-    ~RFReceiver();
+    ~RFReceiver() override;
 
-    ComponentType type() const override
+    [[nodiscard]] ComponentType type() const override
     {
         return "RFReceiver";
     }

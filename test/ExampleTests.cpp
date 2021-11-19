@@ -2,12 +2,12 @@
 
 struct ExampleTests : public ::testing::Test
 {
-    virtual void SetUp() override
+    void SetUp() override
     {
 
     }
 
-    virtual void TearDown() override
+    void TearDown() override
     {
 
     }

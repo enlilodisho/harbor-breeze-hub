@@ -8,12 +8,14 @@ set(Headers
     ${IncludeDir}/RFDataTransmittedEvent.h
     ${IncludeDir}/RFReceiver.h
     ${IncludeDir}/RFTransmitter.h
+    ${IncludeDir}/SSLLParser.h
 )
 set(Sources
     FanManager.cpp
     InterruptsController.cpp
     RFReceiver.cpp
     RFTransmitter.cpp
+    SSLLParser.cpp
     main.cpp
 )
 

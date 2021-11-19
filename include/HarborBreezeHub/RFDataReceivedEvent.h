@@ -5,27 +5,28 @@
 #ifndef HARBORBREEZEHUB_RFDATARECEIVEDEVENT_H
 #define HARBORBREEZEHUB_RFDATARECEIVEDEVENT_H
 
+#include "core.h"
 #include "ComponentEventSystem/Event.h"
-
-#include <string>
-#include <vector>
 
 class RFDataReceivedEvent : public Event
 {
 private:
-    std::vector<unsigned int> data_;
+    const std::shared_ptr<const std::vector<unsigned int>> buffer_;
 
 public:
-    RFDataReceivedEvent(const std::vector<unsigned int> data)
-        : data_(data) {}
-    ~RFDataReceivedEvent() {}
-
-    const std::vector<unsigned int>& getData() const
+    explicit RFDataReceivedEvent(std::shared_ptr<const std::vector<unsigned int>> buffer)
+        : buffer_(std::move(buffer))
     {
-        return data_;
     }
 
-    EventType type() const override
+    ~RFDataReceivedEvent() override = default;
+
+    [[nodiscard]] const std::shared_ptr<const std::vector<unsigned int>>& getData() const
+    {
+        return buffer_;
+    }
+
+    [[nodiscard]] EventType type() const override
     {
         return "RFDataReceivedEvent";
     }

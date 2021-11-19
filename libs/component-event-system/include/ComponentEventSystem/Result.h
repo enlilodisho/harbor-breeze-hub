@@ -10,8 +10,8 @@ constexpr size_t MAX_MESSAGE_LENGTH = 1000;
 // It contains whether the function was successful and a message if it failed.
 struct Result
 {
-    Result(bool success) : success(success) {}
-    Result(bool success, const char* messagef, std::string message) : success(success), message(message) {}
+    explicit Result(bool success) : success(success) {}
+    Result(bool success, const char* messagef, const std::string& message) : success(success), message(message) {}
     Result(bool success, const char* messagef, ...) : success(success)
     {
         va_list args;

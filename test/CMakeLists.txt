@@ -9,6 +9,7 @@ set(Sources
     InterruptsControllerTests.cpp
     RFReceiverTests.cpp
     RFTransmitterTests.cpp
+    SSLLParserTests.cpp
 )
 
 add_executable(${TEST_NAME} ${Sources} ${Headers})

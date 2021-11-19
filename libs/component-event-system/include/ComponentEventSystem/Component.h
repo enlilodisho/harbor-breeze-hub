@@ -29,8 +29,8 @@ protected:
     virtual void doWork() {}
 
 public:
-    Component(const std::string& instanceName) : instanceName_(instanceName) {}
-    virtual ~Component() {}
+    explicit Component(const std::string& instanceName) : instanceName_(instanceName) {}
+    virtual ~Component() = default;
 
     // Sets the event dispatcher this component should use.
     void setEventDispatcher(EventDispatcher* eventDispatcher)
@@ -44,11 +44,11 @@ public:
         return eventDispatcher == eventDispatcher_;
     }
 
-    const std::string& instanceName() const
+    [[nodiscard]] const std::string& instanceName() const
     {
         return instanceName_;
     }
-    virtual ComponentType type() const = 0;
+    [[nodiscard]] virtual ComponentType type() const = 0;
 };
 
 #endif // COMPONENTEVENTSYSTEM_COMPONENT_H
