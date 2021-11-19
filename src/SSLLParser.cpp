@@ -4,6 +4,8 @@
 
 #include "SSLLParser.h"
 #include "RFDataReceivedEvent.h"
+#include "SSLLMessageBeginReceiveEvent.h"
+#include "SSLLMessageEndReceiveEvent.h"
 #include <iostream>
 
 SSLLParser::SSLLParser(const std::string& instanceName, size_t maxMessageLength, unsigned int shortOn,
@@ -191,9 +193,24 @@ Result SSLLParser::verifyTimings(const std::vector<unsigned int>& buffer, size_t
                     // reached end of the message and matched all
                     if (!invokedMessageStart_)
                     {
-                        // TODO invoke message received begin event
+                        // invoke message received begin event
                         invokedMessageStart_ = true;
-                        std::cout << "2 begin message receive\n";
+
+                        // Get message as binary string
+                        Result r = getBinaryStringFromTimings(messageTimings_, messageBinaryStr_);
+                        if (!r.success)
+                        {
+                            messageTimings_.clear();
+                            parserState_ = AWAIT_PATTERN;
+                            return r;
+                        }
+
+                        if (eventDispatcher_ != nullptr)
+                        {
+                            eventDispatcher_->post(this,
+                                                   std::make_unique<SSLLMessageBeginReceiveEvent>(messageBinaryStr_));
+                        }
+                        std::cout << "2 begin message receive: " << messageBinaryStr_ << std::endl;
                     }
                     // TODO maybe check if rest is valid?
                     startBufferIndex = i + 2;
@@ -206,9 +223,15 @@ Result SSLLParser::verifyTimings(const std::vector<unsigned int>& buffer, size_t
             {
                 if (invokedMessageStart_)
                 {
-                    // TODO invoke message received stop event
+                    // invoke message received stop event
                     invokedMessageStart_ = false;
-                    std::cout << "2 stop message receive\n";
+
+                    if (eventDispatcher_ != nullptr)
+                    {
+                        eventDispatcher_->post(this,
+                                               std::make_unique<SSLLMessageEndReceiveEvent>(messageBinaryStr_));
+                    }
+                    std::cout << "2 stop  message receive: " << messageBinaryStr_ << std::endl;
                 }
                 parserState_ = AWAIT_PATTERN;
                 messageTimings_.clear();
@@ -234,9 +257,23 @@ Result SSLLParser::verifyTimings(const std::vector<unsigned int>& buffer, size_t
                     // if here, then matched with repetition of message
                     if (!invokedMessageStart_)
                     {
-                        // TODO invoke message received begin event
+                        // invoke message received begin event
                         invokedMessageStart_ = true;
-                        std::cout << "1 begin message receive\n";
+
+                        Result r = getBinaryStringFromTimings(messageTimings_, messageBinaryStr_);
+                        if (!r.success)
+                        {
+                            messageTimings_.clear();
+                            parserState_ = AWAIT_PATTERN;
+                            return r;
+                        }
+
+                        if (eventDispatcher_ != nullptr)
+                        {
+                            eventDispatcher_->post(this,
+                                                   std::make_unique<SSLLMessageBeginReceiveEvent>(messageBinaryStr_));
+                        }
+                        std::cout << "1 begin message receive: " << messageBinaryStr_ << std::endl;
                     }
                     // TODO maybe check if rest is valid?
                     i++; // skip the next REST
@@ -255,9 +292,15 @@ Result SSLLParser::verifyTimings(const std::vector<unsigned int>& buffer, size_t
             {
                 if (invokedMessageStart_)
                 {
-                    // TODO invoke message received stop event
+                    // invoke message received stop event
                     invokedMessageStart_ = false;
-                    std::cout << "1 stop message receive\n";
+
+                    if (eventDispatcher_ != nullptr)
+                    {
+                        eventDispatcher_->post(this,
+                                               std::make_unique<SSLLMessageEndReceiveEvent>(messageBinaryStr_));
+                    }
+                    std::cout << "1 stop  message receive: " << messageBinaryStr_ << std::endl;
                 }
                 parserState_ = AWAIT_PATTERN;
                 messageTimings_.clear();
@@ -267,6 +310,68 @@ Result SSLLParser::verifyTimings(const std::vector<unsigned int>& buffer, size_t
         }
     }
 
+    return Result(true);
+}
+
+Result SSLLParser::getBinaryStringFromTimings(const std::vector<unsigned int>& timings, std::string& binaryStr) const
+{
+    std::ostringstream ss;
+    unsigned int timing;
+    for (size_t i = 0; i < timings.size(); i++)
+    {
+        timing = getTimingSymbol(timings[i], i % 2 == 0);
+        if (timing == SHORT_ON)
+        {
+            ss << "1";
+        }
+        else if (timing == SHORT_OFF)
+        {
+            ss << "0";
+        }
+        else if (timing == LONG_ON)
+        {
+            ss << "11";
+        }
+        else if (timing == LONG_OFF)
+        {
+            ss << "00";
+        }
+        else
+        {
+            return Result(false, "Timing contains invalid value at index %u (%u)", i, timings[i]);
+        }
+    }
+    binaryStr = ss.str();
+    return Result(true);
+}
+
+Result SSLLParser::getTimingsFromBinaryString(const std::string& binaryStr, std::vector<unsigned int>& timings) const
+{
+    timings.clear();
+    for (size_t i = 0; i < binaryStr.length(); i++)
+    {
+        if (i < binaryStr.length() - 1 && binaryStr[i] == binaryStr[i + 1])
+        {
+            if (binaryStr[i] == '1')
+            {
+                timings.push_back(LONG_ON);            }
+            else
+            {
+                timings.push_back(LONG_OFF);
+            }
+            i++; // skip next bit
+        }
+        else
+        {
+            if (binaryStr[i] == '1')
+            {
+                timings.push_back(SHORT_ON);            }
+            else
+            {
+                timings.push_back(SHORT_OFF);
+            }
+        }
+    }
     return Result(true);
 }
 

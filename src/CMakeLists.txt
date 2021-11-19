@@ -9,6 +9,8 @@ set(Headers
     ${IncludeDir}/RFReceiver.h
     ${IncludeDir}/RFTransmitter.h
     ${IncludeDir}/SSLLParser.h
+    ${IncludeDir}/SSLLMessageBeginReceiveEvent.h
+    ${IncludeDir}/SSLLMessageEndReceiveEvent.h
 )
 set(Sources
     FanManager.cpp

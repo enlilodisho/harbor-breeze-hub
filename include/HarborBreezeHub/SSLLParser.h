@@ -24,6 +24,7 @@ private:
     // vars that are used when parsing received data
     ssize_t messageLength_ = 0;
     std::vector<unsigned int> messageTimings_;
+    std::string messageBinaryStr_;
     size_t verifyMessagePart1Length_ = 0;
     bool invokedMessageStart_ = false;
 
@@ -40,6 +41,9 @@ public:
     explicit SSLLParser(const std::string& instanceName, size_t maxMessageLength, unsigned int shortOn,
                         unsigned int shortOff, unsigned int longOn, unsigned int longOff, unsigned int rest);
     ~SSLLParser() override;
+
+    Result getBinaryStringFromTimings(const std::vector<unsigned int>& timings, std::string& binaryStr) const;
+    Result getTimingsFromBinaryString(const std::string& binaryStr, std::vector<unsigned int>& timings) const;
 
     [[nodiscard]] ComponentType type() const override
     {
