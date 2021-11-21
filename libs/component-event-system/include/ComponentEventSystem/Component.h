@@ -12,6 +12,7 @@
 class Component
 {
 friend class ComponentMaster;
+friend class ComponentMasterForTests;
 
 private:
     std::string instanceName_;

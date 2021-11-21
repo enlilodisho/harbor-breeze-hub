@@ -14,7 +14,7 @@ public:
     EventDispatcherForTests() {}
     ~EventDispatcherForTests() {}
 
-    // Gets and removes all pending events for component from dispatcher.
+    // Gets all pending events for component from dispatcher.
     std::vector<std::pair<Component*,std::shared_ptr<Event>>>
         getEventsForComponent(Component* component)
     {
@@ -25,7 +25,7 @@ public:
         if (it != eventsForComponent_.end())
         {
             events = it->second;
-            eventsForComponent_.erase(it);
+            //eventsForComponent_.erase(it);
         }
         eventsForComponent_mutex.unlock();
         return events;

@@ -16,6 +16,7 @@ class Component;
 class EventDispatcher
 {
 friend class ComponentMaster;
+friend class ComponentMasterForTests;
 private:
     // map containing all subscribers for a particular event from a particular sender
     std::unordered_map<std::pair<EventType,Component*>, std::unordered_set<Component*>,

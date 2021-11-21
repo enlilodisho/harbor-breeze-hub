@@ -11,19 +11,21 @@
 class ComponentMaster
 {
 private:
-    // Stores list of all added components
-    std::vector<std::unique_ptr<Component>> components_;
     // Map giving the thread each component is running on
     std::unordered_map<Component*, std::thread> componentThreads_;
     // Boolean stating whether master component has started
     bool running_ = false;
-    // Event dispatcher handles event posting and subscriptions
-    std::unique_ptr<EventDispatcher> eventDispatcher_;
 
     // Starts a component
     Result startComponentOnNewThread(Component* component);
     // This method is invoked on the running component's thread.
     void component_thread(Component* component);
+
+protected:
+    // Stores list of all added components
+    std::vector<std::unique_ptr<Component>> components_;
+    // Event dispatcher handles event posting and subscriptions
+    std::unique_ptr<EventDispatcher> eventDispatcher_;
 
 public:
     ComponentMaster();

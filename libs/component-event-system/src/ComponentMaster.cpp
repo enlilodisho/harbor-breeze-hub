@@ -73,7 +73,8 @@ void ComponentMaster::component_thread(Component* component)
         {
             for (auto& event : events_it->second)
             {
-                eventsToSend.push_back({event.first,std::move(event.second)});
+                eventsToSend.emplace_back(
+                        std::pair<Component*, std::shared_ptr<Event>>{event.first,std::move(event.second)});
             }
             events_it->second.clear();
         }

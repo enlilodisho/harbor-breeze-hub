@@ -1,4 +1,5 @@
 set(Headers
+    ComponentMasterForTests.h
     EventDispatcherForTests.h
     FakeComponent.h
 )
