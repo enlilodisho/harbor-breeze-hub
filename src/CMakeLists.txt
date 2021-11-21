@@ -11,6 +11,9 @@ set(Headers
     ${IncludeDir}/SSLLParser.h
     ${IncludeDir}/SSLLMessageBeginReceiveEvent.h
     ${IncludeDir}/SSLLMessageEndReceiveEvent.h
+    ${IncludeDir}/TransmitRFDataBeginEvent.h
+    ${IncludeDir}/TransmitRFDataEndEvent.h
+    ${IncludeDir}/TransmitRFDataRequestEvent.h
 )
 set(Sources
     FanManager.cpp

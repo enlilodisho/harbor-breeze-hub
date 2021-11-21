@@ -1,15 +1,15 @@
 //
-// Created by enlil on 4/19/21.
+// Created by enlil on 11/19/21.
 //
 
 #include "RFTransmitter.h"
-#include "RFDataTransmittedEvent.h"
+#include "TransmitRFDataBeginEvent.h"
+#include "TransmitRFDataEndEvent.h"
 
-#include <chrono>
 #include <wiringPi.h>
 #include <iostream>
 
-RFTransmitter::RFTransmitter(std::string instanceName, int pinNumber)
+RFTransmitter::RFTransmitter(const std::string& instanceName, int pinNumber)
     : pinNumber_(pinNumber), Component(instanceName)
 {
     pinMode(pinNumber_, OUTPUT);
@@ -17,61 +17,95 @@ RFTransmitter::RFTransmitter(std::string instanceName, int pinNumber)
 
 RFTransmitter::~RFTransmitter()
 {
+    digitalWrite(pinNumber_, LOW);
     pinMode(pinNumber_, INPUT);
+}
+
+void RFTransmitter::onEvent(Component* sender, std::shared_ptr<Event> event)
+{
+    if (event->type() == "TransmitRFDataRequestEvent")
+    {
+        std::shared_ptr<TransmitRFDataRequestEvent> transmitRFDataRequestEvent
+            = std::static_pointer_cast<TransmitRFDataRequestEvent>(event);
+        transmissionQueue_.push(std::move(transmitRFDataRequestEvent));
+    }
 }
 
 void RFTransmitter::doWork()
 {
-    if (!dataToTransmit_.empty())
+    if (currentTransmissionEvent_ == nullptr)
     {
-        std::vector<unsigned int> data = dataToTransmit_.front();
-        dataToTransmit_.pop();
-
-        bool isHigh = false;
-        size_t dataLength = data.size();
-        typedef std::chrono::steady_clock clock;
-        clock::time_point lastPowerToggle = clock::now();
-        for (size_t data_i = 0; data_i < dataLength; data_i++)
+        if (transmissionQueue_.empty())
         {
-            if (isHigh)
-            {
-                digitalWrite(pinNumber_, 0);
-                isHigh = false;
-            }
-            else
-            {
-                digitalWrite(pinNumber_, 1);
-                isHigh = true;
-            }
+            return;
+        }
+        currentTransmissionEvent_ = std::move(transmissionQueue_.front());
+        transmissionQueue_.pop();
 
-            clock::time_point now;
-            unsigned long interval;
-            do
-            {
-                now = clock::now();
-                interval = std::chrono::duration_cast<std::chrono::microseconds>(now - lastPowerToggle).count();
-            }
-            while (interval < data[data_i]);
+        transmissionIndex_ = 0;
+        transmitCount_ = 0;
+        nextTransmissionHighType_ = true;
+        currentWaitTime_ = 0;
 
-            lastPowerToggle = now;
+        // Invoke begin transmission event
+        if (eventDispatcher_ != nullptr)
+        {
+            eventDispatcher_->post(this,
+                                   std::make_unique<TransmitRFDataBeginEvent>(currentTransmissionEvent_));
         }
 
-        digitalWrite(pinNumber_, 0);
-        if (eventDispatcher_)
+        lastTransmissionTime_ = my_clock::now();
+    }
+
+    if (currentWaitTime_ > 0)
+    {
+        my_clock::time_point curTime = my_clock::now();
+        if (std::chrono::duration_cast<std::chrono::microseconds>(curTime - lastTransmissionTime_).count()
+            < currentWaitTime_)
         {
-            std::unique_ptr<RFDataTransmittedEvent> transmittedDataEvent =
-                std::make_unique<RFDataTransmittedEvent>(data);
-            eventDispatcher_->post(this, std::move(transmittedDataEvent));
+            return;
+        }
+        lastTransmissionTime_ = curTime;
+    }
+
+    auto& timings = currentTransmissionEvent_->getData();
+    if (transmissionIndex_ < timings->size())
+    {
+        if (nextTransmissionHighType_)
+        {
+            digitalWrite(pinNumber_, HIGH);
+        }
+        else
+        {
+            digitalWrite(pinNumber_, LOW);
+        }
+        nextTransmissionHighType_ = !nextTransmissionHighType_;
+
+        currentWaitTime_ = timings->at(transmissionIndex_);
+        transmissionIndex_++;
+    }
+    else
+    {
+        digitalWrite(pinNumber_, LOW);
+
+        transmitCount_++;
+        transmissionIndex_ = 0;
+        if (transmitCount_ < currentTransmissionEvent_->getRepetitions()
+            || currentTransmissionEvent_->getRepetitions() == 0)
+        {
+            currentWaitTime_ = currentTransmissionEvent_->getRestTiming();
+            nextTransmissionHighType_ = true;
+        }
+        else
+        {
+            // Invoke end transmission event
+            if (eventDispatcher_ != nullptr)
+            {
+                eventDispatcher_->post(this,
+                                       std::make_unique<TransmitRFDataEndEvent>(currentTransmissionEvent_));
+            }
+
+            currentTransmissionEvent_.reset();
         }
     }
-}
-
-void RFTransmitter::transmit(const std::vector<unsigned int>& data)
-{
-    dataToTransmit_.push(data);
-}
-
-int RFTransmitter::getPinNumber() const
-{
-    return pinNumber_;
 }

@@ -1,35 +1,43 @@
 //
-// Created by enlil on 4/19/21.
+// Created by enlil on 11/19/21.
 //
 
-#ifndef HARBORBREEZEHUB_RF_TRANSMITTER_H
-#define HARBORBREEZEHUB_RF_TRANSMITTER_H
+#ifndef HARBORBREEZEHUB_RFTRANSMITTER_H
+#define HARBORBREEZEHUB_RFTRANSMITTER_H
 
-#include "ComponentEventSystem/Component.h"
+#include "core.h"
+#include "TransmitRFDataRequestEvent.h"
 
+#include <chrono>
 #include <queue>
-#include <string>
-#include <vector>
 
 class RFTransmitter : public Component
 {
 private:
+    typedef std::chrono::steady_clock my_clock;
     const int pinNumber_;
 
-    std::queue<std::vector<unsigned int>> dataToTransmit_;
+    std::queue<std::shared_ptr<TransmitRFDataRequestEvent>> transmissionQueue_;
+    // vars for current transmission
+    std::shared_ptr<TransmitRFDataRequestEvent> currentTransmissionEvent_;
+    my_clock::time_point lastTransmissionTime_;
+    size_t transmissionIndex_;
+    size_t transmitCount_;
+    bool nextTransmissionHighType_;
+    unsigned int currentWaitTime_;
+
+protected:
+    void onEvent(Component* sender, std::shared_ptr<Event> event) override;
+    void doWork() override;
 
 public:
-    RFTransmitter(std::string instanceName, int pinNumber);
-    ~RFTransmitter();
+    RFTransmitter(const std::string& instanceName, int pinNumber);
+    ~RFTransmitter() override;
 
-    void doWork() override;
-    void transmit(const std::vector<unsigned int>& data);
-    int getPinNumber() const;
-
-    ComponentType type() const override
+    [[nodiscard]] ComponentType type() const override
     {
         return "RFTransmitter";
     }
 };
 
-#endif //HARBORBREEZEHUB_RF_TRANSMITTER_H
+#endif //HARBORBREEZEHUB_RFTRANSMITTER_H
