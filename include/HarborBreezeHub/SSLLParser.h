@@ -25,6 +25,7 @@ private:
     ssize_t messageLength_ = 0;
     std::vector<unsigned int> messageTimings_;
     std::string messageBinaryStr_;
+    std::string messageDataStr_;
     size_t verifyMessagePart1Length_ = 0;
     bool invokedMessageStart_ = false;
 
@@ -44,6 +45,8 @@ public:
 
     Result getBinaryStringFromTimings(const std::vector<unsigned int>& timings, std::string& binaryStr) const;
     Result getTimingsFromBinaryString(const std::string& binaryStr, std::vector<unsigned int>& timings) const;
+    Result getDataStringFromTimings(const std::vector<unsigned int>& timings, std::string& dataStr) const;
+    Result getTimingsFromDataString(const std::string& dataStr, std::vector<unsigned int>& timings) const;
 
     [[nodiscard]] ComponentType type() const override
     {

@@ -43,3 +43,21 @@ TEST_F(SSLLParserTests, GetTimingsFromBinaryTest)
     ASSERT_TRUE(ssllParser->getTimingsFromBinaryString(binary, actualTimings).success);
     ASSERT_EQ(actualTimings, expectedTimings);
 }
+
+TEST_F(SSLLParserTests, GetDataStringFromTimingsTest)
+{
+    std::vector<unsigned int> timings { 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400 };
+    std::string expectedDataString = "SSLLSLSSLLSSLSLLSSLLSSLSLSLLSLLLSSLSLSLLSSLLSSLLS";
+    std::string actualDataString;
+    ASSERT_TRUE(ssllParser->getDataStringFromTimings(timings, actualDataString).success);
+    ASSERT_EQ(actualDataString, expectedDataString);
+}
+
+TEST_F(SSLLParserTests, GetTimingsFromDataStringTest)
+{
+    std::string dataString = "SSLLSLSSLLSSLSLLSSLLSSLSLSLLSLLLSSLSLSLLSSLLSSLLS";
+    std::vector<unsigned int> expectedTimings { 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400 };
+    std::vector<unsigned int> actualTimings;
+    ASSERT_TRUE(ssllParser->getTimingsFromDataString(dataString, actualTimings).success);
+    ASSERT_EQ(actualTimings, expectedTimings);
+}

@@ -6,16 +6,16 @@
 #define HARBORBREEZEHUB_SSLLMESSAGEBEGINRECEIVEEVENT_H
 
 #include "core.h"
-#include "ComponentEventSystem/Event.h"
 
 class SSLLMessageBeginReceiveEvent : public Event
 {
 private:
     const std::string binaryStr_;
+    const std::string dataStr_;
 
 public:
-    explicit SSLLMessageBeginReceiveEvent(const std::string& binaryStr)
-        : binaryStr_(binaryStr)
+    SSLLMessageBeginReceiveEvent(const std::string& binaryStr, const std::string& dataStr)
+        : binaryStr_(binaryStr), dataStr_(dataStr)
     {
     }
     ~SSLLMessageBeginReceiveEvent() override = default;
@@ -23,6 +23,11 @@ public:
     [[nodiscard]] const std::string& getBinaryString() const
     {
         return binaryStr_;
+    }
+
+    [[nodiscard]] const std::string& getDataString() const
+    {
+        return dataStr_;
     }
 
     [[nodiscard]] EventType type() const override
