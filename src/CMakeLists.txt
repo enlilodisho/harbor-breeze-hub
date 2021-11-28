@@ -2,7 +2,9 @@ set(IncludeDir ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME})
 include_directories(${IncludeDir})
 
 set(Headers
-    ${IncludeDir}/FanManager.h
+    ${IncludeDir}/FanController.h
+    ${IncludeDir}/HubConfig.h
+    ${IncludeDir}/HubFactory.h
     ${IncludeDir}/InterruptsController.h
     ${IncludeDir}/RFDataReceivedEvent.h
     ${IncludeDir}/RFDataTransmittedEvent.h
@@ -16,7 +18,7 @@ set(Headers
     ${IncludeDir}/TransmitRFDataRequestEvent.h
 )
 set(Sources
-    FanManager.cpp
+    FanController.cpp
     InterruptsController.cpp
     RFReceiver.cpp
     RFTransmitter.cpp
@@ -31,7 +33,7 @@ include_directories(${WIRINGPI_INCLUDE_DIRS})
 
 # Main library
 add_library(${LIBRARY_NAME} STATIC ${Sources} ${Headers})
-target_link_libraries(${LIBRARY_NAME} PUBLIC ComponentEventSystem ${WIRINGPI_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PUBLIC ComponentEventSystem tinyxml2 ${WIRINGPI_LIBRARIES})
 
 # Main executable
 add_executable(${EXECUTABLE_NAME} ${Sources} ${Headers})

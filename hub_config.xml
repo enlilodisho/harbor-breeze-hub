@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<HarborBreezeHub>
+    <!-- Initialize rf modules; Use BCM GPIO pin numbers -->
+    <RFReceiver name="RFReceiver1" pin="16" />
+    <RFTransmitter name="RFTransmitter1" pin="21" />
+
+    <fans>
+        <fan name="Example Fan" remoteId="SSLLSLSSLLSSLSLLSSLLSSLSLSLLSL" />
+    </fans>
+</HarborBreezeHub>

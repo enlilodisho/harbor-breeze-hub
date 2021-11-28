@@ -16,6 +16,9 @@ set(CMAKE_CXX_STANDARD 17)
 # Add linker flag for boost::filesystem
 set(CMAKE_CXX_FLAGS "-lboost_filesystem")
 
+# Add tinyxml2 library
+add_subdirectory(libs/external/tinyxml2)
+
 option(PACKAGE_TESTS "Build the tests" ON)
 if (PACKAGE_TESTS)
     set(TEST_NAME ${PROJECT_NAME}Tests)

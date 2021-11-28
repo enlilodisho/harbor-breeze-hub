@@ -6,7 +6,6 @@ set(Headers
 
 set(Sources
     ExampleTests.cpp
-    FanManagerTests.cpp
     InterruptsControllerTests.cpp
     RFReceiverTests.cpp
     RFTransmitterTests.cpp

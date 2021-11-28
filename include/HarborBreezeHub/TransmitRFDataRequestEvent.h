@@ -30,6 +30,17 @@ public:
         ss << uuid;
         requestUUID_ = ss.str();
     }
+
+    TransmitRFDataRequestEvent(const TransmitRFDataRequestEvent& original)
+        : timings_(original.timings_), restTiming_(original.restTiming_), repetitions_(original.repetitions_)
+    {
+        // generate new uuid for copy
+        std::ostringstream ss;
+        boost::uuids::uuid uuid = boost::uuids::random_generator()();
+        ss << uuid;
+        requestUUID_ = ss.str();
+    }
+
     ~TransmitRFDataRequestEvent() override = default;
 
     [[nodiscard]] const std::string& getRequestUUID() const

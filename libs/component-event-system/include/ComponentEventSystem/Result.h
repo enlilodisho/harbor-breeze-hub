@@ -11,7 +11,7 @@ constexpr size_t MAX_MESSAGE_LENGTH = 1000;
 struct Result
 {
     explicit Result(bool success) : success(success) {}
-    Result(bool success, const char* messagef, const std::string& message) : success(success), message(message) {}
+    //Result(bool success, const char* messagef, const std::string& message) : success(success), message(message) {}
     Result(bool success, const char* messagef, ...) : success(success)
     {
         va_list args;
