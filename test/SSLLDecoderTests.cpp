@@ -35,15 +35,6 @@ TEST_F(SSLLDecoderTests, GetBinaryFromTimingsTest)
     ASSERT_EQ(actualBinary, expectedBinary);
 }
 
-TEST_F(SSLLDecoderTests, GetTimingsFromBinaryTest)
-{
-    std::string binary = "10110010010110010110110010110010110110110010011001011011011001011001011001";
-    std::vector<unsigned int> expectedTimings { 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400 };
-    std::vector<unsigned int> actualTimings;
-    ASSERT_TRUE(ssllDecoder->getTimingsFromBinaryString(binary, actualTimings).success);
-    ASSERT_EQ(actualTimings, expectedTimings);
-}
-
 TEST_F(SSLLDecoderTests, GetDataStringFromTimingsTest)
 {
     std::vector<unsigned int> timings { 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400 };
@@ -51,13 +42,4 @@ TEST_F(SSLLDecoderTests, GetDataStringFromTimingsTest)
     std::string actualDataString;
     ASSERT_TRUE(ssllDecoder->getDataStringFromTimings(timings, actualDataString).success);
     ASSERT_EQ(actualDataString, expectedDataString);
-}
-
-TEST_F(SSLLDecoderTests, GetTimingsFromDataStringTest)
-{
-    std::string dataString = "SSLLSLSSLLSSLSLLSSLLSSLSLSLLSLLLSSLSLSLLSSLLSSLLS";
-    std::vector<unsigned int> expectedTimings { 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400 };
-    std::vector<unsigned int> actualTimings;
-    ASSERT_TRUE(ssllDecoder->getTimingsFromDataString(dataString, actualTimings).success);
-    ASSERT_EQ(actualTimings, expectedTimings);
 }

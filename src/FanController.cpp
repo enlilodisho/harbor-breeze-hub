@@ -10,8 +10,10 @@
 #include <UpdateFanPowerRequestEvent.h>
 #include <UpdateFanRotationRequestEvent.h>
 #include <UpdateFanSpeedRequestEvent.h>
+#include <TransmitRFDataRequestEvent.h>
 
 #define REMOTE_ID_LENGTH    30
+#define TRANSMIT_COUNT      10
 #define CMD_LIGHT_POWER     "SLSLSSLSLLSSLLSSLLS"
 #define CMD_LIGHT_DIM       "SLSSLLSSLLSSLLSSLLS"
 #define CMD_FAN_POWER       "SLSSLSLSLSLSLLSSLLS"
@@ -24,14 +26,15 @@
 #define CMD_ROTATE_CCW      "SLSSLSLSLLSSLLSSLLS"
 #define CMD_ROTATE_CW       "SLSSLSLSLLSLSLSSLLS"
 
-FanController::FanController(const std::string &instanceName)
-    : Component(instanceName)
+FanController::FanController(const std::string &instanceName, std::unique_ptr<SSLLEncoder> ssllEncoder)
+    : ssllEncoder_(std::move(ssllEncoder)), Component(instanceName)
 {
 
 }
 
-FanController::FanController(const std::string& instanceName, const std::unordered_map<std::string, FanConfig>& fans)
-    : Component(instanceName)
+FanController::FanController(const std::string& instanceName, std::unique_ptr<SSLLEncoder> ssllEncoder,
+                             const std::unordered_map<std::string, FanConfig>& fans)
+    : ssllEncoder_(std::move(ssllEncoder)), Component(instanceName)
 {
     for (auto& fanConfig : fans)
     {
@@ -113,42 +116,99 @@ void FanController::onEvent(Component* sender, std::shared_ptr<Event> event)
     }
     else if (event->type() == "UpdateFanLightRequestEvent")
     {
+        if (eventDispatcher_ == nullptr) return;
         std::shared_ptr<UpdateFanLightRequestEvent> updateFanLightEvent
                 = std::static_pointer_cast<UpdateFanLightRequestEvent>(event);
         auto fan_it = fans_.find(updateFanLightEvent->getFanName());
-        if (fan_it == fans_.end())
+        if (fan_it == fans_.end() || fan_it->second.state_.lightPower_ == updateFanLightEvent->getLightPower())
         {
-            return; // fan not in FanController
+            return;
+        }
+        std::unique_ptr<std::vector<unsigned int>> timings;
+        if (ssllEncoder_->getTimingsFromDataString(fan_it->second.remoteId_ + CMD_LIGHT_POWER, *timings).success)
+        {
+            std::unique_ptr<TransmitRFDataRequestEvent> transmissionRequestEvent =
+                    std::make_unique<TransmitRFDataRequestEvent>(std::move(timings), ssllEncoder_->REST, TRANSMIT_COUNT);
+            eventDispatcher_->post(this, std::move(transmissionRequestEvent));
         }
     }
     else if (event->type() == "UpdateFanPowerRequestEvent")
     {
+        if (eventDispatcher_ == nullptr) return;
         std::shared_ptr<UpdateFanPowerRequestEvent> updateFanPowerEvent
                 = std::static_pointer_cast<UpdateFanPowerRequestEvent>(event);
         auto fan_it = fans_.find(updateFanPowerEvent->getFanName());
-        if (fan_it == fans_.end())
+        if (fan_it == fans_.end() || fan_it->second.state_.fanPower_ == updateFanPowerEvent->getFanPower())
         {
             return; // fan not in FanController
+        }
+        std::unique_ptr<std::vector<unsigned int>> timings;
+        if (ssllEncoder_->getTimingsFromDataString(fan_it->second.remoteId_ + CMD_FAN_POWER, *timings).success)
+        {
+            std::unique_ptr<TransmitRFDataRequestEvent> transmissionRequestEvent =
+                    std::make_unique<TransmitRFDataRequestEvent>(std::move(timings), ssllEncoder_->REST, TRANSMIT_COUNT);
+            eventDispatcher_->post(this, std::move(transmissionRequestEvent));
         }
     }
     else if (event->type() == "UpdateFanRotationRequestEvent")
     {
+        if (eventDispatcher_ == nullptr) return;
         std::shared_ptr<UpdateFanRotationRequestEvent> updateFanRotationEvent
                 = std::static_pointer_cast<UpdateFanRotationRequestEvent>(event);
         auto fan_it = fans_.find(updateFanRotationEvent->getFanName());
-        if (fan_it == fans_.end())
+        if (fan_it == fans_.end() || fan_it->second.state_.fanRotation_ == updateFanRotationEvent->getFanRotation())
         {
             return; // fan not in FanController
+        }
+        std::unique_ptr<std::vector<unsigned int>> timings;
+        if (ssllEncoder_->getTimingsFromDataString(fan_it->second.remoteId_ +
+        ((updateFanRotationEvent->getFanRotation() == CCW) ? CMD_ROTATE_CCW : CMD_ROTATE_CW), *timings).success)
+        {
+            std::unique_ptr<TransmitRFDataRequestEvent> transmissionRequestEvent =
+                    std::make_unique<TransmitRFDataRequestEvent>(std::move(timings), ssllEncoder_->REST, TRANSMIT_COUNT);
+            eventDispatcher_->post(this, std::move(transmissionRequestEvent));
         }
     }
     else if (event->type() == "UpdateFanSpeedRequestEvent")
     {
+        if (eventDispatcher_ == nullptr) return;
         std::shared_ptr<UpdateFanSpeedRequestEvent> updateFanSpeedEvent
                 = std::static_pointer_cast<UpdateFanSpeedRequestEvent>(event);
         auto fan_it = fans_.find(updateFanSpeedEvent->getFanName());
-        if (fan_it == fans_.end())
+        if (fan_it == fans_.end() || fan_it->second.state_.fanSpeed_ == updateFanSpeedEvent->getFanSpeed())
         {
             return; // fan not in FanController
+        }
+        std::string dataStr = fan_it->second.remoteId_;
+        switch (updateFanSpeedEvent->getFanSpeed())
+        {
+            case 1:
+                dataStr += CMD_FAN_SPEED_1;
+                break;
+            case 2:
+                dataStr += CMD_FAN_SPEED_2;
+                break;
+            case 3:
+                dataStr += CMD_FAN_SPEED_3;
+                break;
+            case 4:
+                dataStr += CMD_FAN_SPEED_4;
+                break;
+            case 5:
+                dataStr += CMD_FAN_SPEED_5;
+                break;
+            case 6:
+                dataStr += CMD_FAN_SPEED_6;
+                break;
+            default:
+                return; // invalid speed
+        }
+        std::unique_ptr<std::vector<unsigned int>> timings;
+        if (ssllEncoder_->getTimingsFromDataString(dataStr, *timings).success)
+        {
+            std::unique_ptr<TransmitRFDataRequestEvent> transmissionRequestEvent =
+                    std::make_unique<TransmitRFDataRequestEvent>(std::move(timings), ssllEncoder_->REST, TRANSMIT_COUNT);
+            eventDispatcher_->post(this, std::move(transmissionRequestEvent));
         }
     }
     else if (event->type() == "TransmitRFDataBeginEvent")

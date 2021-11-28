@@ -8,6 +8,7 @@
 #include "core.h"
 #include "FanState.h"
 #include "HubConfig.h"
+#include "SSLLEncoder.h"
 
 #include <chrono>
 #include <unordered_map>
@@ -15,8 +16,9 @@
 class FanController : public Component
 {
 public:
-    explicit FanController(const std::string& instanceName);
-    FanController(const std::string& instanceName, const std::unordered_map<std::string, FanConfig>& fans);
+    FanController(const std::string& instanceName, std::unique_ptr<SSLLEncoder> ssllEncoder);
+    FanController(const std::string& instanceName, std::unique_ptr<SSLLEncoder> ssllEncoder,
+                  const std::unordered_map<std::string, FanConfig>& fans);
     ~FanController() override;
 
     [[nodiscard]] ComponentType type() const override
@@ -35,6 +37,7 @@ protected:
         FanState state_;
     };
 
+    std::unique_ptr<SSLLEncoder> ssllEncoder_;
     std::unordered_map<std::string, struct Fan> fans_;
 
     void onEvent(Component* sender, std::shared_ptr<Event> event) override;

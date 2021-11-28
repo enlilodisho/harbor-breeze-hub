@@ -13,6 +13,7 @@
 #include "SSLLDecoder.h"
 #include "FanController.h"
 #include "RFTransmitter.h"
+#include "SSLLEncoder.h"
 
 #include <ComponentEventSystem/ComponentMaster.h>
 #include <boost/filesystem.hpp>
@@ -139,8 +140,13 @@ public:
 
     static Result addHubComponentsFromConfig(ComponentMaster& componentMaster, const HubConfig& config)
     {
+        // Create SSLLEncoder to be used to generate rf signal to send to fan
+        // TODO use timings from xml
+        std::unique_ptr<SSLLEncoder> ssllEncoder = std::make_unique<SSLLEncoder>(400, 500, 850, 950, 10400);
         // Create FanController component to manage all fans
-        std::unique_ptr<FanController> fanController = std::make_unique<FanController>("Hub-FanController", config.fans_);
+        std::unique_ptr<FanController> fanController = std::make_unique<FanController>("Hub-FanController",
+                                                                                       std::move(ssllEncoder),
+                                                                                       config.fans_);
 
         // Register all RFReceivers
         for (const auto& it : config.rfReceivers_)

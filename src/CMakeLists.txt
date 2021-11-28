@@ -12,6 +12,7 @@ set(Headers
     ${IncludeDir}/RFReceiver.h
     ${IncludeDir}/RFTransmitter.h
     ${IncludeDir}/SSLLDecoder.h
+    ${IncludeDir}/SSLLEncoder.h
     ${IncludeDir}/SSLLMessageBeginReceiveEvent.h
     ${IncludeDir}/SSLLMessageEndReceiveEvent.h
     ${IncludeDir}/TransmitRFDataBeginEvent.h
@@ -28,6 +29,7 @@ set(Sources
     RFReceiver.cpp
     RFTransmitter.cpp
     SSLLDecoder.cpp
+    SSLLEncoder.cpp
     main.cpp
 )
 

@@ -17,10 +17,7 @@ SSLLDecoder::SSLLDecoder(const std::string& instanceName, size_t maxMessageLengt
 
 }
 
-SSLLDecoder::~SSLLDecoder()
-{
-
-}
+SSLLDecoder::~SSLLDecoder() = default;
 
 void SSLLDecoder::onEvent(Component* sender, std::shared_ptr<Event> event)
 {
@@ -352,36 +349,6 @@ Result SSLLDecoder::getBinaryStringFromTimings(const std::vector<unsigned int>& 
     return Result(true);
 }
 
-Result SSLLDecoder::getTimingsFromBinaryString(const std::string& binaryStr, std::vector<unsigned int>& timings) const
-{
-    timings.clear();
-    for (size_t i = 0; i < binaryStr.length(); i++)
-    {
-        if (i < binaryStr.length() - 1 && binaryStr[i] == binaryStr[i + 1])
-        {
-            if (binaryStr[i] == '1')
-            {
-                timings.push_back(LONG_ON);            }
-            else
-            {
-                timings.push_back(LONG_OFF);
-            }
-            i++; // skip next bit
-        }
-        else
-        {
-            if (binaryStr[i] == '1')
-            {
-                timings.push_back(SHORT_ON);            }
-            else
-            {
-                timings.push_back(SHORT_OFF);
-            }
-        }
-    }
-    return Result(true);
-}
-
 Result SSLLDecoder::getDataStringFromTimings(const std::vector<unsigned int>& timings, std::string& dataStr) const
 {
     std::ostringstream ss;
@@ -403,41 +370,6 @@ Result SSLLDecoder::getDataStringFromTimings(const std::vector<unsigned int>& ti
         }
     }
     dataStr = ss.str();
-    return Result(true);
-}
-
-Result SSLLDecoder::getTimingsFromDataString(const std::string& dataStr, std::vector<unsigned int>& timings) const
-{
-    timings.clear();
-    for (size_t i = 0; i < dataStr.length(); i++)
-    {
-        if (dataStr[i] == 'S' || dataStr[i] == 's')
-        {
-            if (i % 2 == 0)
-            {
-                timings.push_back(SHORT_ON);
-            }
-            else
-            {
-                timings.push_back(SHORT_OFF);
-            }
-        }
-        else if (dataStr[i] == 'L' || dataStr[i] == 'l')
-        {
-            if (i % 2 == 0)
-            {
-                timings.push_back(LONG_ON);
-            }
-            else
-            {
-                timings.push_back(LONG_OFF);
-            }
-        }
-        else
-        {
-            return Result(false, "Data string contains invalid char at index %u (%c)", i, dataStr[i]);
-        }
-    }
     return Result(true);
 }
 
