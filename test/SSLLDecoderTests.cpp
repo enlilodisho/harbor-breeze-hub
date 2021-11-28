@@ -2,22 +2,22 @@
 // Created by enlil on 11/18/21.
 //
 #include "EventDispatcherForTests.h"
-#include "HarborBreezeHub/SSLLParser.h"
+#include "HarborBreezeHub/SSLLDecoder.h"
 
 #include <gtest/gtest.h>
 
-struct SSLLParserTests : public ::testing::Test
+struct SSLLDecoderTests : public ::testing::Test
 {
-    std::unique_ptr<SSLLParser> ssllParser;
+    std::unique_ptr<SSLLDecoder> ssllDecoder;
     std::unique_ptr<EventDispatcherForTests> eventDispatcherForTests;
 
     void SetUp() override
     {
 
-        ssllParser = std::make_unique<SSLLParser>("SSLLParser", 60,
-                                                  400, 500,850, 950, 10400);
+        ssllDecoder = std::make_unique<SSLLDecoder>("SSLLDecoder", 60,
+                                                   400, 500, 850, 950, 10400);
         eventDispatcherForTests = std::make_unique<EventDispatcherForTests>();
-        ssllParser->setEventDispatcher(eventDispatcherForTests.get());
+        ssllDecoder->setEventDispatcher(eventDispatcherForTests.get());
     }
 
     void TearDown() override
@@ -26,38 +26,38 @@ struct SSLLParserTests : public ::testing::Test
     }
 };
 
-TEST_F(SSLLParserTests, GetBinaryFromTimingsTest)
+TEST_F(SSLLDecoderTests, GetBinaryFromTimingsTest)
 {
     std::vector<unsigned int> timings { 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400 };
     std::string expectedBinary = "10110010010110010110110010110010110110110010011001011011011001011001011001";
     std::string actualBinary;
-    ASSERT_TRUE(ssllParser->getBinaryStringFromTimings(timings, actualBinary).success);
+    ASSERT_TRUE(ssllDecoder->getBinaryStringFromTimings(timings, actualBinary).success);
     ASSERT_EQ(actualBinary, expectedBinary);
 }
 
-TEST_F(SSLLParserTests, GetTimingsFromBinaryTest)
+TEST_F(SSLLDecoderTests, GetTimingsFromBinaryTest)
 {
     std::string binary = "10110010010110010110110010110010110110110010011001011011011001011001011001";
     std::vector<unsigned int> expectedTimings { 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400 };
     std::vector<unsigned int> actualTimings;
-    ASSERT_TRUE(ssllParser->getTimingsFromBinaryString(binary, actualTimings).success);
+    ASSERT_TRUE(ssllDecoder->getTimingsFromBinaryString(binary, actualTimings).success);
     ASSERT_EQ(actualTimings, expectedTimings);
 }
 
-TEST_F(SSLLParserTests, GetDataStringFromTimingsTest)
+TEST_F(SSLLDecoderTests, GetDataStringFromTimingsTest)
 {
     std::vector<unsigned int> timings { 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400 };
     std::string expectedDataString = "SSLLSLSSLLSSLSLLSSLLSSLSLSLLSLLLSSLSLSLLSSLLSSLLS";
     std::string actualDataString;
-    ASSERT_TRUE(ssllParser->getDataStringFromTimings(timings, actualDataString).success);
+    ASSERT_TRUE(ssllDecoder->getDataStringFromTimings(timings, actualDataString).success);
     ASSERT_EQ(actualDataString, expectedDataString);
 }
 
-TEST_F(SSLLParserTests, GetTimingsFromDataStringTest)
+TEST_F(SSLLDecoderTests, GetTimingsFromDataStringTest)
 {
     std::string dataString = "SSLLSLSSLLSSLSLLSSLLSSLSLSLLSLLLSSLSLSLLSSLLSSLLS";
     std::vector<unsigned int> expectedTimings { 400, 500, 850, 950, 400, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 950, 850, 950, 400, 500, 850, 500, 850, 500, 850, 950, 400, 500, 850, 950, 400, 500, 850, 950, 400 };
     std::vector<unsigned int> actualTimings;
-    ASSERT_TRUE(ssllParser->getTimingsFromDataString(dataString, actualTimings).success);
+    ASSERT_TRUE(ssllDecoder->getTimingsFromDataString(dataString, actualTimings).success);
     ASSERT_EQ(actualTimings, expectedTimings);
 }

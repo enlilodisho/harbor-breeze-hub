@@ -6,6 +6,7 @@
 #define HARBORBREEZEHUB_FANCONTROLLER_H
 
 #include "core.h"
+#include "FanState.h"
 #include "HubConfig.h"
 
 #include <chrono>
@@ -14,25 +15,6 @@
 class FanController : public Component
 {
 public:
-    enum Power
-    {
-        OFF,
-        ON
-    };
-    enum Rotation
-    {
-        CCW,
-        CW
-    };
-    struct FanState
-    {
-        Power fanPower_ = OFF;
-        uint8_t fanSpeed_ = 0;
-        Rotation fanRotation_ = CCW;
-        Power lightPower_ = OFF;
-        uint8_t lightBrightness_ = 0;
-    };
-
     explicit FanController(const std::string& instanceName);
     FanController(const std::string& instanceName, const std::unordered_map<std::string, FanConfig>& fans);
     ~FanController() override;

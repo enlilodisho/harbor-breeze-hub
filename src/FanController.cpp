@@ -6,6 +6,10 @@
 #include "SSLLMessageBeginReceiveEvent.h"
 #include "SSLLMessageEndReceiveEvent.h"
 #include <iostream>
+#include <UpdateFanLightRequestEvent.h>
+#include <UpdateFanPowerRequestEvent.h>
+#include <UpdateFanRotationRequestEvent.h>
+#include <UpdateFanSpeedRequestEvent.h>
 
 #define REMOTE_ID_LENGTH    30
 #define CMD_LIGHT_POWER     "SLSLSSLSLLSSLLSSLLS"
@@ -107,6 +111,46 @@ void FanController::onEvent(Component* sender, std::shared_ptr<Event> event)
         fan->receivingMessage_ = false;
         fan->lastMessageTime_ = curTime;
     }
+    else if (event->type() == "UpdateFanLightRequestEvent")
+    {
+        std::shared_ptr<UpdateFanLightRequestEvent> updateFanLightEvent
+                = std::static_pointer_cast<UpdateFanLightRequestEvent>(event);
+        auto fan_it = fans_.find(updateFanLightEvent->getFanName());
+        if (fan_it == fans_.end())
+        {
+            return; // fan not in FanController
+        }
+    }
+    else if (event->type() == "UpdateFanPowerRequestEvent")
+    {
+        std::shared_ptr<UpdateFanPowerRequestEvent> updateFanPowerEvent
+                = std::static_pointer_cast<UpdateFanPowerRequestEvent>(event);
+        auto fan_it = fans_.find(updateFanPowerEvent->getFanName());
+        if (fan_it == fans_.end())
+        {
+            return; // fan not in FanController
+        }
+    }
+    else if (event->type() == "UpdateFanRotationRequestEvent")
+    {
+        std::shared_ptr<UpdateFanRotationRequestEvent> updateFanRotationEvent
+                = std::static_pointer_cast<UpdateFanRotationRequestEvent>(event);
+        auto fan_it = fans_.find(updateFanRotationEvent->getFanName());
+        if (fan_it == fans_.end())
+        {
+            return; // fan not in FanController
+        }
+    }
+    else if (event->type() == "UpdateFanSpeedRequestEvent")
+    {
+        std::shared_ptr<UpdateFanSpeedRequestEvent> updateFanSpeedEvent
+                = std::static_pointer_cast<UpdateFanSpeedRequestEvent>(event);
+        auto fan_it = fans_.find(updateFanSpeedEvent->getFanName());
+        if (fan_it == fans_.end())
+        {
+            return; // fan not in FanController
+        }
+    }
     else if (event->type() == "TransmitRFDataBeginEvent")
     {
 
@@ -159,7 +203,6 @@ Result FanController::updateFanStateFromCommand(struct FanState& fanState, const
     {
         std::cout << "rotate ccw\n";
     }
-                          //SLSSLSLSLLSLSLSSLLS
     else if (commandStr == CMD_ROTATE_CW) // rotate cw
     {
         std::cout << "rotate cw\n";

@@ -10,7 +10,7 @@
 #include "core.h"
 #include "HubConfig.h"
 #include "RFReceiver.h"
-#include "SSLLParser.h"
+#include "SSLLDecoder.h"
 #include "FanController.h"
 #include "RFTransmitter.h"
 
@@ -147,21 +147,21 @@ public:
         {
             std::unique_ptr<RFReceiver> rfReceiver = std::make_unique<RFReceiver>(it.first, it.second.pin_);
 
-            // TODO create ssllParser using arguments from xml
-            std::unique_ptr<SSLLParser> ssllParser = std::make_unique<SSLLParser>("SSLLParser-" + it.first,
-                                                                                  60, 400, 500, 850, 950, 10400);
-            componentMaster.getEventDispatcher().subscribe(ssllParser.get(), "RFDataReceivedEvent", rfReceiver.get());
-            componentMaster.getEventDispatcher().subscribe(fanController.get(), "SSLLMessageBeginReceiveEvent", ssllParser.get());
-            componentMaster.getEventDispatcher().subscribe(fanController.get(), "SSLLMessageEndReceiveEvent", ssllParser.get());
+            // TODO create ssllDecoder using arguments from xml
+            std::unique_ptr<SSLLDecoder> ssllDecoder = std::make_unique<SSLLDecoder>("SSLLDecoder-" + it.first,
+                                                                                    60, 400, 500, 850, 950, 10400);
+            componentMaster.getEventDispatcher().subscribe(ssllDecoder.get(), "RFDataReceivedEvent", rfReceiver.get());
+            componentMaster.getEventDispatcher().subscribe(fanController.get(), "SSLLMessageBeginReceiveEvent", ssllDecoder.get());
+            componentMaster.getEventDispatcher().subscribe(fanController.get(), "SSLLMessageEndReceiveEvent", ssllDecoder.get());
 
             // Add RFReceiver and relevant components to ComponentMaster
             if (!componentMaster.addComponent(std::move(rfReceiver)).success)
             {
                 return Result(false, "Failed to add RFReceiver to component master");
             }
-            if (!componentMaster.addComponent(std::move(ssllParser)).success)
+            if (!componentMaster.addComponent(std::move(ssllDecoder)).success)
             {
-                return Result(false, "Failed to add SSLLParser to component master");
+                return Result(false, "Failed to add SSLLDecoder to component master");
             }
         }
 

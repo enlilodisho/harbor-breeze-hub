@@ -2,27 +2,27 @@
 // Created by enlil on 11/18/21.
 //
 
-#include "SSLLParser.h"
+#include "SSLLDecoder.h"
 #include "RFDataReceivedEvent.h"
 #include "SSLLMessageBeginReceiveEvent.h"
 #include "SSLLMessageEndReceiveEvent.h"
 
 #include <iostream> //temp
 
-SSLLParser::SSLLParser(const std::string& instanceName, size_t maxMessageLength, unsigned int shortOn,
-                       unsigned int shortOff, unsigned int longOn, unsigned int longOff, unsigned int rest)
+SSLLDecoder::SSLLDecoder(const std::string& instanceName, size_t maxMessageLength, unsigned int shortOn,
+                         unsigned int shortOff, unsigned int longOn, unsigned int longOff, unsigned int rest)
     : MAX_MESSAGE_LENGTH(maxMessageLength), SHORT_ON(shortOn), SHORT_OFF(shortOff), LONG_ON(longOn), LONG_OFF(longOff),
       REST(rest), Component(instanceName)
 {
 
 }
 
-SSLLParser::~SSLLParser()
+SSLLDecoder::~SSLLDecoder()
 {
 
 }
 
-void SSLLParser::onEvent(Component* sender, std::shared_ptr<Event> event)
+void SSLLDecoder::onEvent(Component* sender, std::shared_ptr<Event> event)
 {
     if (event->type() == "RFDataReceivedEvent")
     {
@@ -31,7 +31,7 @@ void SSLLParser::onEvent(Component* sender, std::shared_ptr<Event> event)
     }
 }
 
-Result SSLLParser::doParseTimings(const std::shared_ptr<const std::vector<unsigned int>>& buffer)
+Result SSLLDecoder::doParseTimings(const std::shared_ptr<const std::vector<unsigned int>>& buffer)
 {
     switch (parserState_)
     {
@@ -46,7 +46,7 @@ Result SSLLParser::doParseTimings(const std::shared_ptr<const std::vector<unsign
     }
 }
 
-Result SSLLParser::awaitPattern(const std::vector<unsigned int>& buffer, size_t startBufferIndex)
+Result SSLLDecoder::awaitPattern(const std::vector<unsigned int>& buffer, size_t startBufferIndex)
 {
     if (parserState_ == AWAIT_PATTERN_SPLIT)
     {
@@ -179,7 +179,7 @@ Result SSLLParser::awaitPattern(const std::vector<unsigned int>& buffer, size_t 
     return Result(true);
 }
 
-Result SSLLParser::verifyTimings(const std::vector<unsigned int>& buffer, size_t startBufferIndex)
+Result SSLLDecoder::verifyTimings(const std::vector<unsigned int>& buffer, size_t startBufferIndex)
 {
     if (parserState_ == VERIFY_TIMINGS_SPLIT)
     {
@@ -320,7 +320,7 @@ Result SSLLParser::verifyTimings(const std::vector<unsigned int>& buffer, size_t
     return Result(true);
 }
 
-Result SSLLParser::getBinaryStringFromTimings(const std::vector<unsigned int>& timings, std::string& binaryStr) const
+Result SSLLDecoder::getBinaryStringFromTimings(const std::vector<unsigned int>& timings, std::string& binaryStr) const
 {
     std::ostringstream ss;
     unsigned int timing;
@@ -352,7 +352,7 @@ Result SSLLParser::getBinaryStringFromTimings(const std::vector<unsigned int>& t
     return Result(true);
 }
 
-Result SSLLParser::getTimingsFromBinaryString(const std::string& binaryStr, std::vector<unsigned int>& timings) const
+Result SSLLDecoder::getTimingsFromBinaryString(const std::string& binaryStr, std::vector<unsigned int>& timings) const
 {
     timings.clear();
     for (size_t i = 0; i < binaryStr.length(); i++)
@@ -382,7 +382,7 @@ Result SSLLParser::getTimingsFromBinaryString(const std::string& binaryStr, std:
     return Result(true);
 }
 
-Result SSLLParser::getDataStringFromTimings(const std::vector<unsigned int>& timings, std::string& dataStr) const
+Result SSLLDecoder::getDataStringFromTimings(const std::vector<unsigned int>& timings, std::string& dataStr) const
 {
     std::ostringstream ss;
     unsigned int timing;
@@ -406,7 +406,7 @@ Result SSLLParser::getDataStringFromTimings(const std::vector<unsigned int>& tim
     return Result(true);
 }
 
-Result SSLLParser::getTimingsFromDataString(const std::string& dataStr, std::vector<unsigned int>& timings) const
+Result SSLLDecoder::getTimingsFromDataString(const std::string& dataStr, std::vector<unsigned int>& timings) const
 {
     timings.clear();
     for (size_t i = 0; i < dataStr.length(); i++)
@@ -441,7 +441,7 @@ Result SSLLParser::getTimingsFromDataString(const std::string& dataStr, std::vec
     return Result(true);
 }
 
-bool SSLLParser::isValidTiming(const unsigned int& actual, const unsigned int& expected) const
+bool SSLLDecoder::isValidTiming(const unsigned int& actual, const unsigned int& expected) const
 {
     if (actual > expected)
     {
@@ -453,7 +453,7 @@ bool SSLLParser::isValidTiming(const unsigned int& actual, const unsigned int& e
     }
 }
 
-unsigned int SSLLParser::getTimingSymbol(const unsigned int& timing, bool onSymbol) const
+unsigned int SSLLDecoder::getTimingSymbol(const unsigned int& timing, bool onSymbol) const
 {
     if (onSymbol)
     {

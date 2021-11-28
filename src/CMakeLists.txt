@@ -3,6 +3,7 @@ include_directories(${IncludeDir})
 
 set(Headers
     ${IncludeDir}/FanController.h
+    ${IncludeDir}/FanState.h
     ${IncludeDir}/HubConfig.h
     ${IncludeDir}/HubFactory.h
     ${IncludeDir}/InterruptsController.h
@@ -10,19 +11,23 @@ set(Headers
     ${IncludeDir}/RFDataTransmittedEvent.h
     ${IncludeDir}/RFReceiver.h
     ${IncludeDir}/RFTransmitter.h
-    ${IncludeDir}/SSLLParser.h
+    ${IncludeDir}/SSLLDecoder.h
     ${IncludeDir}/SSLLMessageBeginReceiveEvent.h
     ${IncludeDir}/SSLLMessageEndReceiveEvent.h
     ${IncludeDir}/TransmitRFDataBeginEvent.h
     ${IncludeDir}/TransmitRFDataEndEvent.h
     ${IncludeDir}/TransmitRFDataRequestEvent.h
+    ${IncludeDir}/UpdateFanLightRequestEvent.h
+    ${IncludeDir}/UpdateFanPowerRequestEvent.h
+    ${IncludeDir}/UpdateFanRotationRequestEvent.h
+    ${IncludeDir}/UpdateFanSpeedRequestEvent.h
 )
 set(Sources
     FanController.cpp
     InterruptsController.cpp
     RFReceiver.cpp
     RFTransmitter.cpp
-    SSLLParser.cpp
+    SSLLDecoder.cpp
     main.cpp
 )
 

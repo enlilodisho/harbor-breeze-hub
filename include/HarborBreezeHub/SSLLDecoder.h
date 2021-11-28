@@ -2,12 +2,12 @@
 // Created by enlil on 11/18/21.
 //
 
-#ifndef HARBORBREEZEHUB_SSLLPARSER_H
-#define HARBORBREEZEHUB_SSLLPARSER_H
+#ifndef HARBORBREEZEHUB_SSLLDECODER_H
+#define HARBORBREEZEHUB_SSLLDECODER_H
 
 #include "core.h"
 
-class SSLLParser : public Component {
+class SSLLDecoder : public Component {
 private:
     const unsigned int SHORT_ON, SHORT_OFF, LONG_ON, LONG_OFF, REST;
     const size_t MAX_MESSAGE_LENGTH;
@@ -39,9 +39,9 @@ protected:
     void onEvent(Component* sender, std::shared_ptr<Event> event) override;
 
 public:
-    explicit SSLLParser(const std::string& instanceName, size_t maxMessageLength, unsigned int shortOn,
-                        unsigned int shortOff, unsigned int longOn, unsigned int longOff, unsigned int rest);
-    ~SSLLParser() override;
+    explicit SSLLDecoder(const std::string& instanceName, size_t maxMessageLength, unsigned int shortOn,
+                         unsigned int shortOff, unsigned int longOn, unsigned int longOff, unsigned int rest);
+    ~SSLLDecoder() override;
 
     Result getBinaryStringFromTimings(const std::vector<unsigned int>& timings, std::string& binaryStr) const;
     Result getTimingsFromBinaryString(const std::string& binaryStr, std::vector<unsigned int>& timings) const;
@@ -50,9 +50,9 @@ public:
 
     [[nodiscard]] ComponentType type() const override
     {
-        return "SSLLParser";
+        return "SSLLDecoder";
     }
 };
 
 
-#endif //HARBORBREEZEHUB_SSLLPARSER_H
+#endif //HARBORBREEZEHUB_SSLLDECODER_H
