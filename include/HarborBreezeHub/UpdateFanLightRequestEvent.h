@@ -21,12 +21,12 @@ public:
     }
     ~UpdateFanLightRequestEvent() override = default;
 
-    const std::string& getFanName() const
+    [[nodiscard]] const std::string& getFanName() const
     {
         return fanName_;
     }
 
-    const Power& getLightPower() const
+    [[nodiscard]] const Power& getLightPower() const
     {
         return newLightPower_;
     }

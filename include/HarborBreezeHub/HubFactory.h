@@ -14,6 +14,7 @@
 #include "FanController.h"
 #include "RFTransmitter.h"
 #include "SSLLEncoder.h"
+#include "HttpsApiServer.h"
 
 #include <ComponentEventSystem/ComponentMaster.h>
 #include <boost/filesystem.hpp>
@@ -45,7 +46,35 @@ public:
             for (auto xmlElement = hubRootElement->FirstChildElement(); xmlElement != nullptr;
                  xmlElement = xmlElement->NextSiblingElement())
             {
-                if (strcmp(xmlElement->Name(), "RFReceiver") == 0)
+                if (strcmp(xmlElement->Name(), "HttpsApiServer") == 0)
+                {
+                    HttpsApiServerConfig httpsApiServerConfig{};
+                    // Get name of https server
+                    auto name_c_str = xmlElement->Attribute("name");
+                    if (name_c_str == nullptr)
+                    {
+                        return Result(false, "Error parsing HttpsApiServer in config. Cannot find name attribute.");
+                    }
+                    if (config->httpsApiServers_.find(name_c_str) != config->httpsApiServers_.end())
+                    {
+                        return Result(false, "Config already contains HttpsApiServer with name %s", name_c_str);
+                    }
+                    // Get port of https server
+                    auto port_c_str = xmlElement->Attribute("port");
+                    try
+                    {
+                        httpsApiServerConfig.port_ = std::stoi(port_c_str);
+                    }
+                    catch (std::exception& ex)
+                    {
+                        return Result(false, "Error parsing HttpsApiServer port in config: %s", ex.what());
+                    }
+                    // Get certificate and private key for ssl
+                    httpsApiServerConfig.certificate_ = xmlElement->Attribute("certificate");
+                    httpsApiServerConfig.privateKey_ = xmlElement->Attribute("private_key");
+                    config->httpsApiServers_[name_c_str] = httpsApiServerConfig;
+                }
+                else if (strcmp(xmlElement->Name(), "RFReceiver") == 0)
                 {
                     RFReceiverConfig rfReceiverConfig{};
                     // Get name of rf receiver
@@ -186,6 +215,24 @@ public:
             }
         }
 
+        // Register all HttpsApiServers
+        for (const auto& it : config.httpsApiServers_)
+        {
+            std::unique_ptr<HttpsApiServer> httpApiServer = std::make_unique<HttpsApiServer>(it.first, it.second.port_,
+                                                                         it.second.certificate_, it.second.privateKey_);
+            componentMaster.getEventDispatcher().subscribe(fanController.get(), "UpdateFanLightRequestEvent", httpApiServer.get());
+            componentMaster.getEventDispatcher().subscribe(fanController.get(), "UpdateFanPowerRequestEvent", httpApiServer.get());
+            componentMaster.getEventDispatcher().subscribe(fanController.get(), "UpdateFanRotationRequestEvent", httpApiServer.get());
+            componentMaster.getEventDispatcher().subscribe(fanController.get(), "UpdateFanSpeedRequestEvent", httpApiServer.get());
+
+            // Add HttpsApiServer to ComponentMaster
+            if (!componentMaster.addComponent(std::move(httpApiServer)).success)
+            {
+                return Result(false, "Failed to add HttpsApiServer to component master");
+            }
+        }
+
+        // Add FanController to ComponentMaster
         if (!componentMaster.addComponent(std::move(fanController)).success)
         {
             return Result(false, "Failed to add FanController to component master");

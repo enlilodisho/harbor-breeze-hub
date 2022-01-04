@@ -8,6 +8,12 @@
 #include <string>
 #include <unordered_map>
 
+struct HttpsApiServerConfig
+{
+    int port_;
+    std::string certificate_;
+    std::string privateKey_;
+};
 struct RFReceiverConfig
 {
     int pin_;
@@ -22,6 +28,7 @@ struct FanConfig
 };
 struct HubConfig
 {
+    std::unordered_map<std::string, HttpsApiServerConfig> httpsApiServers_;
     std::unordered_map<std::string, RFReceiverConfig> rfReceivers_;
     std::unordered_map<std::string, RFTransmitterConfig> rfTransmitters_;
     std::unordered_map<std::string, FanConfig> fans_;

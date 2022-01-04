@@ -124,7 +124,8 @@ void FanController::onEvent(Component* sender, std::shared_ptr<Event> event)
         {
             return;
         }
-        std::unique_ptr<std::vector<unsigned int>> timings;
+        fan_it->second.state_.lightPower_ = updateFanLightEvent->getLightPower();
+        std::unique_ptr<std::vector<unsigned int>> timings = std::make_unique<std::vector<unsigned int>>();
         if (ssllEncoder_->getTimingsFromDataString(fan_it->second.remoteId_ + CMD_LIGHT_POWER, *timings).success)
         {
             std::unique_ptr<TransmitRFDataRequestEvent> transmissionRequestEvent =
@@ -142,7 +143,8 @@ void FanController::onEvent(Component* sender, std::shared_ptr<Event> event)
         {
             return; // fan not in FanController
         }
-        std::unique_ptr<std::vector<unsigned int>> timings;
+        fan_it->second.state_.fanPower_ = updateFanPowerEvent->getFanPower();
+        std::unique_ptr<std::vector<unsigned int>> timings = std::make_unique<std::vector<unsigned int>>();
         if (ssllEncoder_->getTimingsFromDataString(fan_it->second.remoteId_ + CMD_FAN_POWER, *timings).success)
         {
             std::unique_ptr<TransmitRFDataRequestEvent> transmissionRequestEvent =
@@ -160,7 +162,8 @@ void FanController::onEvent(Component* sender, std::shared_ptr<Event> event)
         {
             return; // fan not in FanController
         }
-        std::unique_ptr<std::vector<unsigned int>> timings;
+        fan_it->second.state_.fanRotation_ = updateFanRotationEvent->getFanRotation();
+        std::unique_ptr<std::vector<unsigned int>> timings = std::make_unique<std::vector<unsigned int>>();
         if (ssllEncoder_->getTimingsFromDataString(fan_it->second.remoteId_ +
         ((updateFanRotationEvent->getFanRotation() == CCW) ? CMD_ROTATE_CCW : CMD_ROTATE_CW), *timings).success)
         {
@@ -179,6 +182,8 @@ void FanController::onEvent(Component* sender, std::shared_ptr<Event> event)
         {
             return; // fan not in FanController
         }
+        fan_it->second.state_.fanPower_ = ON;
+        fan_it->second.state_.fanSpeed_ = updateFanSpeedEvent->getFanSpeed();
         std::string dataStr = fan_it->second.remoteId_;
         switch (updateFanSpeedEvent->getFanSpeed())
         {
@@ -203,7 +208,7 @@ void FanController::onEvent(Component* sender, std::shared_ptr<Event> event)
             default:
                 return; // invalid speed
         }
-        std::unique_ptr<std::vector<unsigned int>> timings;
+        std::unique_ptr<std::vector<unsigned int>> timings = std::make_unique<std::vector<unsigned int>>();
         if (ssllEncoder_->getTimingsFromDataString(dataStr, *timings).success)
         {
             std::unique_ptr<TransmitRFDataRequestEvent> transmissionRequestEvent =
@@ -222,7 +227,7 @@ Result FanController::updateFanStateFromCommand(struct FanState& fanState, const
     if (commandStr == CMD_LIGHT_POWER) // light power
     {
         std::cout << "light power\n";
-        fanState.fanPower_ = (fanState.lightPower_ == OFF) ? ON : OFF;
+        fanState.lightPower_ = (fanState.lightPower_ == OFF) ? ON : OFF;
     }
     else if (commandStr == CMD_FAN_POWER) // fan power
     {
@@ -262,10 +267,12 @@ Result FanController::updateFanStateFromCommand(struct FanState& fanState, const
     else if (commandStr == CMD_ROTATE_CCW) // rotate ccw
     {
         std::cout << "rotate ccw\n";
+        fanState.fanRotation_ = CCW;
     }
     else if (commandStr == CMD_ROTATE_CW) // rotate cw
     {
         std::cout << "rotate cw\n";
+        fanState.fanRotation_ = CW;
     }
     else if (commandStr == CMD_LIGHT_DIM) // light dim
     {

@@ -4,3 +4,9 @@
 [submodule "libs/external/tinyxml2"]
 	path = libs/external/tinyxml2
 	url = https://github.com/leethomason/tinyxml2
+[submodule "libs/external/cpp-httplib"]
+	path = libs/external/cpp-httplib
+	url = https://github.com/yhirose/cpp-httplib
+[submodule "libs/external/json"]
+	path = libs/external/json
+	url = https://github.com/nlohmann/json

@@ -21,12 +21,12 @@ public:
     }
     ~UpdateFanRotationRequestEvent() override = default;
 
-    const std::string& getFanName() const
+    [[nodiscard]] const std::string& getFanName() const
     {
         return fanName_;
     }
 
-    const Rotation& getFanRotation() const
+    [[nodiscard]] const Rotation& getFanRotation() const
     {
         return newFanRotation_;
     }

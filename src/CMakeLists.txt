@@ -4,6 +4,7 @@ include_directories(${IncludeDir})
 set(Headers
     ${IncludeDir}/FanController.h
     ${IncludeDir}/FanState.h
+    ${IncludeDir}/HttpsApiServer.h
     ${IncludeDir}/HubConfig.h
     ${IncludeDir}/HubFactory.h
     ${IncludeDir}/InterruptsController.h
@@ -25,6 +26,7 @@ set(Headers
 )
 set(Sources
     FanController.cpp
+    HttpsApiServer.cpp
     InterruptsController.cpp
     RFReceiver.cpp
     RFTransmitter.cpp
@@ -40,7 +42,7 @@ include_directories(${WIRINGPI_INCLUDE_DIRS})
 
 # Main library
 add_library(${LIBRARY_NAME} STATIC ${Sources} ${Headers})
-target_link_libraries(${LIBRARY_NAME} PUBLIC ComponentEventSystem tinyxml2 ${WIRINGPI_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PUBLIC ComponentEventSystem httplib::httplib tinyxml2 ${WIRINGPI_LIBRARIES})
 
 # Main executable
 add_executable(${EXECUTABLE_NAME} ${Sources} ${Headers})

@@ -21,12 +21,12 @@ public:
     }
     ~UpdateFanSpeedRequestEvent() override = default;
 
-    const std::string& getFanName() const
+    [[nodiscard]] const std::string& getFanName() const
     {
         return fanName_;
     }
 
-    uint8_t getFanSpeed() const
+    [[nodiscard]] uint8_t getFanSpeed() const
     {
         return newFanSpeed_;
     }
